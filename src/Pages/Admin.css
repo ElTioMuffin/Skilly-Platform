@@ -1,0 +1,100 @@
+.admin-stats {
+
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:25px;
+
+    margin-top:60px;
+
+}
+
+
+.admin-card {
+
+    background:#fff;
+
+    border:1px solid #eaeaea;
+
+    border-radius:28px;
+
+    padding:35px 30px;
+
+    min-height:220px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:flex-end;
+
+    transition:0.3s;
+
+}
+
+
+.admin-card:hover {
+
+    transform:translateY(-8px);
+
+}
+
+
+
+.admin-number {
+
+    font-size:14px;
+
+    letter-spacing:2px;
+
+    color:#777;
+
+    margin-bottom:auto;
+
+}
+
+
+
+.admin-card h3 {
+
+    font-size:28px;
+
+    line-height:1.1;
+
+    margin-bottom:15px;
+
+}
+
+
+
+.admin-card p {
+
+    font-size:18px;
+
+    color:#555;
+
+    margin:0;
+
+}
+
+
+
+@media(max-width:1000px){
+
+.admin-stats{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+
+@media(max-width:600px){
+
+.admin-stats{
+
+grid-template-columns:1fr;
+
+}
+
+}
