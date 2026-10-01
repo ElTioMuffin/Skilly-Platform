@@ -15,6 +15,7 @@ function RequestService() {
     project: "",
     details: "",
     date: "",
+    time: "",
     budget: "",
     modality: "",
   });
@@ -141,6 +142,9 @@ function RequestService() {
 
         requested_date:
           formData.date || null,
+
+        requested_time:
+          formData.time || null,
 
         budget: budgetNumber,
 
@@ -443,6 +447,23 @@ function RequestService() {
                 name="date"
                 type="date"
                 value={formData.date}
+                onChange={handleChange}
+                required
+              />
+
+            </div>
+
+            <div className="form-group">
+
+              <label htmlFor="time">
+                Hora propuesta
+              </label>
+
+              <input
+                id="time"
+                name="time"
+                type="time"
+                value={formData.time}
                 onChange={handleChange}
                 required
               />

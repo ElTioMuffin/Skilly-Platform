@@ -156,6 +156,11 @@ class ServiceRequest(models.Model):
         blank=True
     )
 
+    requested_time = models.TimeField(
+        null=True,
+        blank=True
+    )
+
     budget = models.DecimalField(
         max_digits=12,
         decimal_places=0,
@@ -188,6 +193,39 @@ class ServiceRequest(models.Model):
 
     def __str__(self):
         return self.project
+
+
+class PlatformNotification(models.Model):
+    recipient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="platform_notifications",
+    )
+    service_request = models.ForeignKey(
+        ServiceRequest,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications",
+    )
+    appointment = models.ForeignKey(
+        "Appointment",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications",
+    )
+    title = models.CharField(max_length=180)
+    message = models.TextField()
+    link = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
 
 
 class Review(models.Model):
@@ -278,6 +316,7 @@ class Appointment(models.Model):
                     "date",
                     "time"
                 ],
+                condition=models.Q(status__in=["Pendiente", "Confirmada"]),
                 name="unique_professional_appointment"
             )
         ]

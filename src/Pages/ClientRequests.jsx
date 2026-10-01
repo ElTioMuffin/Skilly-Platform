@@ -521,7 +521,10 @@ function ClientRequests() {
                             ).toLocaleDateString(
                               "es-CL"
                             )
-                          : "No especificada"}
+                            : "No especificada"}
+                        {request.requested_time && (
+                          <> · {request.requested_time.slice(0, 5)}</>
+                        )}
                       </strong>
 
                     </div>

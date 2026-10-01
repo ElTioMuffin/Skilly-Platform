@@ -7,7 +7,8 @@ from .models import (
     Appointment,
     Incident,
     AppointmentChangeRequest,
-    ProfessionalAvailability
+    ProfessionalAvailability,
+    PlatformNotification,
 )
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -87,6 +88,7 @@ class ServiceRequestSerializer(serializers.ModelSerializer):
             "project",
             "details",
             "requested_date",
+            "requested_time",
             "budget",
             "modality",
             "status",
@@ -115,6 +117,41 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def validate(self, attrs):
+        professional = attrs.get("professional", getattr(self.instance, "professional", None))
+        date = attrs.get("date", getattr(self.instance, "date", None))
+        time = attrs.get("time", getattr(self.instance, "time", None))
+
+        if not all((professional, date, time)):
+            return attrs
+
+        day_names = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
+        day = day_names[date.weekday()]
+        available = ProfessionalAvailability.objects.filter(
+            professional=professional,
+            day=day,
+            active=True,
+            start_time__lte=time,
+            end_time__gt=time,
+        ).exists()
+        if not available:
+            raise serializers.ValidationError({
+                "time": "La hora seleccionada está fuera de la disponibilidad del profesional."
+            })
+
+        occupied = Appointment.objects.filter(
+            professional=professional,
+            date=date,
+            time=time,
+            status__in=["Pendiente", "Confirmada"],
+        )
+        if self.instance:
+            occupied = occupied.exclude(pk=self.instance.pk)
+        if occupied.exists():
+            raise serializers.ValidationError({"time": "Ese horario ya está reservado."})
+
+        return attrs
 
 class IncidentSerializer(serializers.ModelSerializer):
 
@@ -157,4 +194,28 @@ class ProfessionalAvailabilitySerializer(
         model = ProfessionalAvailability
 
         fields="__all__"
+
+    def validate(self, attrs):
+        start = attrs.get("start_time", getattr(self.instance, "start_time", None))
+        end = attrs.get("end_time", getattr(self.instance, "end_time", None))
+        if start and end and start >= end:
+            raise serializers.ValidationError({"end_time": "La hora de término debe ser posterior a la hora de inicio."})
+        return attrs
+
+
+class PlatformNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlatformNotification
+        fields = [
+            "id",
+            "recipient",
+            "service_request",
+            "appointment",
+            "title",
+            "message",
+            "link",
+            "is_read",
+            "created_at",
+        ]
+        read_only_fields = fields
 

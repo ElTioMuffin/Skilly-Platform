@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, get_user_model
 from rest_framework import status, viewsets
 
 from rest_framework.decorators import (
+    action,
     api_view,
     permission_classes,
 )
@@ -24,6 +25,7 @@ from .models import (
     AppointmentChangeRequest,
     Refund,
     ProfessionalAvailability,
+    PlatformNotification,
 )
 
 from .serializers import (
@@ -34,6 +36,7 @@ from .serializers import (
     AppointmentSerializer,
     IncidentSerializer,
     ProfessionalAvailabilitySerializer,
+    PlatformNotificationSerializer,
 )
 
 
@@ -290,6 +293,53 @@ class ServiceRequestViewSet(
 
     serializer_class = ServiceRequestSerializer
 
+    def perform_create(self, serializer):
+        service_request = serializer.save()
+        organization = getattr(service_request.client, "profile", None)
+        organization_name = (
+            organization.full_name if organization else service_request.client.username
+        )
+        service_name = service_request.service.name if service_request.service else "Servicio"
+        proposed_schedule = "Sin horario propuesto"
+        if service_request.requested_date:
+            proposed_schedule = service_request.requested_date.strftime("%d-%m-%Y")
+            if service_request.requested_time:
+                proposed_schedule += f" a las {service_request.requested_time.strftime('%H:%M')}"
+
+        PlatformNotification.objects.create(
+            recipient=service_request.professional.user,
+            service_request=service_request,
+            title="Nueva solicitud de servicio",
+            message=(
+                f"{organization_name} solicitó {service_name}. "
+                f"Horario propuesto: {proposed_schedule}."
+            ),
+            link=(
+                f"/solicitudes/{service_request.professional_id}"
+                f"?solicitud={service_request.id}"
+            ),
+        )
+
+
+class PlatformNotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = PlatformNotificationSerializer
+
+    def get_queryset(self):
+        queryset = PlatformNotification.objects.select_related(
+            "service_request", "recipient"
+        )
+        user_id = self.request.query_params.get("user")
+        if not user_id:
+            return queryset.none()
+        return queryset.filter(recipient_id=user_id)
+
+    @action(detail=True, methods=["post"])
+    def mark_read(self, request, pk=None):
+        notification = self.get_object()
+        notification.is_read = True
+        notification.save(update_fields=["is_read"])
+        return Response(self.get_serializer(notification).data)
+
 
 # =============================================================
 # REVIEWS
@@ -315,6 +365,29 @@ class AppointmentViewSet(
     queryset = Appointment.objects.all()
 
     serializer_class = AppointmentSerializer
+
+    def perform_create(self, serializer):
+        appointment = serializer.save()
+        client_profile = getattr(appointment.client, "profile", None)
+        organization_name = (
+            client_profile.full_name if client_profile else appointment.client.username
+        )
+        service_name = appointment.service.name
+        proposed_schedule = (
+            f"{appointment.date.strftime('%d-%m-%Y')} "
+            f"a las {appointment.time.strftime('%H:%M')}"
+        )
+
+        PlatformNotification.objects.create(
+            recipient=appointment.professional.user,
+            appointment=appointment,
+            title="Nueva reserva recibida",
+            message=(
+                f"{organization_name} reservó {service_name}. "
+                f"Horario solicitado: {proposed_schedule}."
+            ),
+            link=f"/reservas-recibidas?reserva={appointment.id}",
+        )
 
 
 # =============================================================

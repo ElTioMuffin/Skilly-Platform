@@ -72,12 +72,22 @@ function ProfessionalCard({ professional }) {
           </span>
 
 
-          <Link
-            to={`/profesional/${professional.id}`}
-            className="professional-profile-button"
-          >
-            Ver perfil →
-          </Link>
+          <div className="professional-card-actions">
+            <Link
+              to={`/profesional/${professional.id}`}
+              className="professional-profile-button"
+            >
+              Ver perfil
+            </Link>
+            {mainService && (
+              <Link
+                to={`/reservar/${professional.id}`}
+                className="professional-booking-link"
+              >
+                Reservar hora
+              </Link>
+            )}
+          </div>
 
         </div>
 

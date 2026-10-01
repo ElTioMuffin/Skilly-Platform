@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 
 function ProfessionalBookings() {
+  const [searchParams] = useSearchParams();
+  const highlightedReservationId = searchParams.get("reserva");
   const [reservas, setReservas] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,6 +81,14 @@ function ProfessionalBookings() {
 
     loadData();
   }, [professionalId]);
+
+  useEffect(() => {
+    if (!highlightedReservationId || !reservas.length) return;
+    document.getElementById(`reservation-${highlightedReservationId}`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [highlightedReservationId, reservas]);
 
   const updateReservationStatus = async (
     reservationId,
@@ -197,8 +207,9 @@ function ProfessionalBookings() {
             {reservas.map((reserva) => (
 
               <article
-                className="professional-booking-card"
+                className={`professional-booking-card${String(reserva.id) === highlightedReservationId ? " request-card-highlighted" : ""}`}
                 key={reserva.id}
+                id={`reservation-${reserva.id}`}
               >
 
                 <div className="professional-booking-header">

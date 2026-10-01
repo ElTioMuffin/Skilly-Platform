@@ -539,6 +539,35 @@
   background: #333333;
 }
 
+.professional-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.professional-card-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  border: 1px solid #111111;
+  border-radius: 9px;
+  color: #111111;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.professional-card-actions .professional-booking-link {
+  background: #111111;
+  color: #ffffff;
+}
+
+.professional-card-actions a:hover {
+  opacity: 0.82;
+}
+
 .no-results {
   padding: 80px 20px;
   border: 1px solid #e5e5e5;
@@ -3216,6 +3245,267 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+}
+
+.booking-calendar {
+  padding: 22px;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.booking-calendar-header,
+.booking-time-picker-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.booking-calendar-header label {
+  color: #666666;
+  font-size: 13px;
+}
+
+.booking-calendar-header h2 {
+  margin: 4px 0 18px;
+  color: #171717;
+  font-size: 20px;
+  text-transform: capitalize;
+}
+
+.booking-calendar-navigation {
+  display: flex;
+  gap: 8px;
+}
+
+.booking-calendar-navigation button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e2e2e2;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #222222;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.booking-calendar-navigation button:disabled {
+  color: #bdbdbd;
+  cursor: default;
+}
+
+.booking-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.booking-calendar-weekdays {
+  margin-bottom: 7px;
+  color: #777777;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.booking-calendar-weekdays span {
+  padding: 8px 0;
+}
+
+.booking-calendar-day,
+.booking-calendar-empty {
+  position: relative;
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: #f7f7f7;
+  color: #b4b4b4;
+  font: inherit;
+}
+
+.booking-calendar-day.has-hours {
+  border-color: #dedede;
+  background: #ffffff;
+  color: #222222;
+  cursor: pointer;
+}
+
+.booking-calendar-day.has-hours:hover,
+.booking-calendar-day.selected {
+  border-color: #151515;
+  background: #151515;
+  color: #ffffff;
+}
+
+.booking-calendar-day:disabled {
+  cursor: default;
+}
+
+.booking-calendar-day.has-hours > span,
+.booking-calendar-legend > span {
+  position: absolute;
+  bottom: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #7b61ff;
+}
+
+.booking-calendar-day.selected > span {
+  background: #ffffff;
+}
+
+.booking-calendar-legend {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding-left: 13px;
+  color: #666666;
+  font-size: 12px;
+}
+
+.booking-calendar-legend > span {
+  left: 0;
+  bottom: auto;
+}
+
+.booking-time-picker {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #eeeeee;
+}
+
+.booking-time-picker-heading h3 {
+  margin: 0;
+  color: #222222;
+  font-size: 16px;
+  text-transform: capitalize;
+}
+
+.booking-time-picker-heading > span {
+  color: #777777;
+  font-size: 12px;
+}
+
+.booking-time-picker > p {
+  margin: 12px 0 0;
+  color: #777777;
+  font-size: 14px;
+}
+
+.booking-time-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.booking-time-option {
+  padding: 11px 8px;
+  border: 1px solid #dedede;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #222222;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.booking-time-option:hover,
+.booking-time-option.selected {
+  border-color: #151515;
+  background: #151515;
+  color: #ffffff;
+}
+
+.notifications-page {
+  min-height: 70vh;
+  padding: 48px 24px 80px;
+  background: #fafafa;
+}
+
+.notifications-container {
+  width: min(820px, 100%);
+  margin: 0 auto;
+}
+
+.notifications-header {
+  margin: 34px 0 24px;
+}
+
+.notifications-header h1 {
+  margin: 8px 0;
+  font-size: clamp(30px, 5vw, 42px);
+}
+
+.notifications-header p,
+.notifications-empty {
+  color: #666666;
+}
+
+.notifications-list {
+  display: grid;
+  gap: 12px;
+}
+
+.notification-item {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notification-item.unread {
+  border-color: #c9c0ff;
+  background: #fbfaff;
+}
+
+.notification-indicator {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.notification-item.unread .notification-indicator {
+  background: #7b61ff;
+}
+
+.notification-copy {
+  display: grid;
+  gap: 5px;
+  color: #222222;
+}
+
+.notification-copy > span {
+  color: #555555;
+}
+
+.notification-copy small {
+  color: #888888;
+}
+
+.notification-open {
+  color: #4d36c8;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.request-card-highlighted {
+  outline: 3px solid #7b61ff;
+  outline-offset: 3px;
 }
 
 

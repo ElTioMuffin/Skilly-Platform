@@ -16,20 +16,12 @@
 
 
 
-.profile-edit-form label {
-
-    display: block;
-
-    font-size: 14px;
-
-    text-transform: uppercase;
-
-    letter-spacing: 2px;
-
-    margin-bottom: 10px;
-
-    color: #777;
-
+.form-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
 }
 
 
@@ -86,4 +78,13 @@
 
     margin: 30px 0;
 
+}
+
+.profile-edit-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #000000 !important;
 }

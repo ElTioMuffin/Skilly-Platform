@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 
 function ProfessionalRequests() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const highlightedRequestId = searchParams.get("solicitud");
 
   const [professional, setProfessional] = useState(null);
   const [requests, setRequests] = useState([]);
@@ -66,6 +68,14 @@ function ProfessionalRequests() {
   useEffect(() => {
     loadData();
   }, [id]);
+
+  useEffect(() => {
+    if (!highlightedRequestId || !requests.length) return;
+    document.getElementById(`request-${highlightedRequestId}`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [highlightedRequestId, requests]);
 
 
   const updateRequestStatus = async (
@@ -232,8 +242,9 @@ function ProfessionalRequests() {
             {requests.map((request) => (
 
               <article
-                className="request-card"
+                className={`request-card${String(request.id) === highlightedRequestId ? " request-card-highlighted" : ""}`}
                 key={request.id}
+                id={`request-${request.id}`}
               >
 
                 <div className="request-card-header">
@@ -309,7 +320,10 @@ function ProfessionalRequests() {
                           ).toLocaleDateString(
                             "es-CL"
                           )
-                        : "No especificada"}
+                          : "No especificada"}
+                      {request.requested_time && (
+                        <> · {request.requested_time.slice(0, 5)}</>
+                      )}
                     </strong>
 
                   </div>

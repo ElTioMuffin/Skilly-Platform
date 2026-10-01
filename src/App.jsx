@@ -21,6 +21,7 @@ import ProfileEdit from "./Pages/ProfileEdit"
 import MyAppointments from "./Pages/MyAppointments"
 import Schedule from "./Pages/Schedule";
 import Services from "./Pages/Services";
+import Notifications from "./Pages/Notifications";
 
 import "./App.css";
 
@@ -120,6 +121,10 @@ function App() {
           <Route
             path="/servicios"
             element={<Services />}
+          />
+          <Route
+            path="/notificaciones"
+            element={<Notifications />}
           />
 
         </Routes>

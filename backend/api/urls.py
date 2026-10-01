@@ -10,6 +10,7 @@ from .views import (
     AppointmentViewSet,
     IncidentViewSet,
     ProfessionalAvailabilityViewSet,
+    PlatformNotificationViewSet,
     pending_profiles,
     validate_profile,
     login_view,
@@ -97,6 +98,12 @@ router.register(
     "availability",
     ProfessionalAvailabilityViewSet,
     basename="availability"
+)
+
+router.register(
+    "notifications",
+    PlatformNotificationViewSet,
+    basename="notifications",
 )
 
 router.register(
