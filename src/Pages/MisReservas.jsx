@@ -276,6 +276,15 @@ function MisReservas() {
                     </Link>
                   )}
 
+                  {reserva.status == "Completada" && (
+                    <Link
+                      to={`/dejar-review/${reserva.id}`}
+                      className="booking-profile-button"
+                    >
+                      {console.log(reserva)}
+                      Dejar review
+                    </Link>
+                  )}
                 </article>
               );
             })}

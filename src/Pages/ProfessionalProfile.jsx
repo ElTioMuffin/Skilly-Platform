@@ -299,13 +299,13 @@ function ProfessionalProfile() {
 
                 <div className="profile-action-buttons">
 
-                  <button
+                  {/* <button
                     type="button"
                     className="request-service-button"
                     onClick={handleRequestService}
                   >
                     Solicitar servicio
-                  </button>
+                  </button> */}
 
 
                   <button
@@ -329,14 +329,14 @@ function ProfessionalProfile() {
 
             )}
 
-
-            <button
+            
+            {/* <button
               type="button"
               className="view-requests-button"
               onClick={handleViewRequests}
             >
               Ver solicitudes recibidas
-            </button>
+            </button> */}
 
           </aside>
 
@@ -373,7 +373,7 @@ function ProfessionalProfile() {
                 <div className="review-meta">
 
                   <span>
-                    Cliente #{review.client}
+                    Cliente {review.client_full_name || review.client_username}
                   </span>
 
                   <span>

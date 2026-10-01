@@ -227,36 +227,6 @@ class PlatformNotification(models.Model):
     def __str__(self):
         return self.title
 
-
-class Review(models.Model):
-
-    service_request = models.OneToOneField(
-        ServiceRequest,
-        on_delete=models.CASCADE,
-        related_name="review"
-    )
-
-    client = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="reviews_written"
-    )
-
-    professional = models.ForeignKey(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name="reviews_received"
-    )
-
-    comment = models.TextField()
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    def __str__(self):
-        return f"Reseña para {self.professional.full_name}"
-
 class Appointment(models.Model):
 
     STATUS_CHOICES = [
@@ -327,6 +297,34 @@ class Appointment(models.Model):
             f"{self.date} {self.time}"
         )
 
+
+class Review(models.Model):
+
+    appointment = models.OneToOneField(
+        Appointment,
+        on_delete=models.CASCADE,
+        related_name="review"
+    )
+
+    client = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews_written"
+    )
+
+    professional = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="reviews_received"
+    )
+
+    comment = models.TextField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    
 
 class Incident(models.Model):
 

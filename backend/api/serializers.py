@@ -13,14 +13,37 @@ from .models import (
 
 class ReviewSerializer(serializers.ModelSerializer):
 
+    client_username = serializers.CharField(
+            source="client.username",
+            read_only=True
+        )
+
+    client_full_name = serializers.CharField(
+            source="client.profile.full_name",
+            read_only=True
+        )
+
     class Meta:
         model = Review
         fields = [
             "id",
+            "appointment",
             "client",
             "professional",
             "comment",
             "created_at",
+            "client_username",
+            "client_full_name",
+        ]
+
+        read_only_fields = [
+
+            "client",
+
+            "professional",
+
+            "created_at"
+
         ]
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -46,6 +69,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
 class ProfileSerializer(serializers.ModelSerializer):
 
     services = ServiceSerializer(

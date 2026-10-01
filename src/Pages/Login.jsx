@@ -45,6 +45,7 @@ function Login() {
 
       console.log("Login correcto:", response.data);
 
+
       // Guardamos los datos básicos del usuario
       localStorage.setItem(
         "skillyUser",

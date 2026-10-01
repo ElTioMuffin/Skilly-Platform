@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, get_user_model
+from django.core.exceptions import ValidationError
 
 from rest_framework import status, viewsets
 
@@ -48,7 +49,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
     queryset = Profile.objects.all().filter(
         user__is_staff=False,
-        role="professional"
+        role="professional",
+        validated=True
     )
 
     serializer_class = ProfileSerializer
@@ -345,14 +347,56 @@ class PlatformNotificationViewSet(viewsets.ReadOnlyModelViewSet):
 # REVIEWS
 # =============================================================
 
-class ReviewViewSet(
-    viewsets.ModelViewSet
-):
-
-    queryset = Review.objects.all()
+class ReviewViewSet(viewsets.ModelViewSet):
 
     serializer_class = ReviewSerializer
 
+
+    def get_queryset(self):
+
+        return Review.objects.all().order_by(
+            "-created_at"
+        )
+
+
+
+    def perform_create(self, serializer):
+
+
+        appointment = serializer.validated_data[
+            "appointment"
+        ]
+
+
+        # Verificar que el servicio terminó
+
+        if appointment.status != "Completada":
+
+            raise ValidationError(
+                "Solo puedes evaluar servicios completados."
+            )
+
+
+
+        # Evitar doble reseña
+
+        if Review.objects.filter(
+            appointment=appointment
+        ).exists():
+
+            raise ValidationError(
+                "Este servicio ya tiene una reseña."
+            )
+
+
+
+        serializer.save(
+
+            client=appointment.client,
+
+            professional=appointment.professional
+
+        )
 
 # =============================================================
 # APPOINTMENTS
@@ -712,6 +756,8 @@ def pending_profiles(request):
         profiles,
         many=True
     )
+
+    print(profiles)  # Agrega esta línea para imprimir los datos serializados
 
     return Response(
         serializer.data,

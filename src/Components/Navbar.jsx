@@ -1,61 +1,198 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  useEffect,
+  useState
+} from "react";
+
+import {
+  Link,
+  useNavigate
+} from "react-router-dom";
+
 import "./Navbar.css";
 
+
 function Navbar() {
+
+
   const navigate = useNavigate();
+
+
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const storedUser = localStorage.getItem("skillyUser");
-  const isLoggedIn = !!storedUser;
+
+
+  const storedUser =
+    localStorage.getItem("skillyUser");
+
+
+  const storedProfile =
+    localStorage.getItem("skillyProfile");
+
+
 
   const user = storedUser
     ? JSON.parse(storedUser)
     : null;
-  const storedProfile = localStorage.getItem("skillyProfile");
-  const profile = storedProfile ? JSON.parse(storedProfile) : null;
 
-  const isAdmin = user?.is_staff === true;
-  const isProfessional = profile?.role === "professional";
+
+
+  const profile = storedProfile
+    ? JSON.parse(storedProfile)
+    : null;
+
+
+
+  const isLoggedIn = !!user;
+
+
+  const isAdmin =
+    user?.is_staff === true;
+
+
+
+  const isProfessional =
+    profile?.role === "professional";
+
+
+
+  const isOrganization =
+    profile?.role === "organization";
+
+
+
+
+
 
   useEffect(() => {
-    if (!isProfessional || !user?.id) {
+
+
+    if (
+      !isProfessional ||
+      !user?.id
+    ) {
+
       setUnreadCount(0);
-      return undefined;
+
+      return;
+
     }
+
+
+
+
     const loadUnread = async () => {
+
+
       try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/notifications/?user=${user.id}`
+
+
+        const response =
+          await fetch(
+
+            `http://127.0.0.1:8000/api/notifications/?user=${user.id}`
+
+          );
+
+
+
+        if (!response.ok)
+          return;
+
+
+
+        const data =
+          await response.json();
+
+
+
+        const notifications =
+          Array.isArray(data)
+            ? data
+            : data.results || [];
+
+
+
+        setUnreadCount(
+
+          notifications.filter(
+            item => !item.is_read
+          ).length
+
         );
-        if (!response.ok) return;
-        const data = await response.json();
-        const notifications = Array.isArray(data) ? data : data.results || [];
-        setUnreadCount(notifications.filter((item) => !item.is_read).length);
-      } catch {
-        // Keep navigation usable if notifications are temporarily unavailable.
+
+
+
+      } catch (error) {
+
+        console.error(error);
+
       }
+
+
     };
+
+
+
     loadUnread();
-    const interval = window.setInterval(loadUnread, 5000);
-    return () => window.clearInterval(interval);
-  }, [isProfessional, user?.id]);
+
+
+
+    const interval =
+      setInterval(
+        loadUnread,
+        5000
+      );
+
+
+
+    return () => clearInterval(interval);
+
+
+
+  }, [
+    isProfessional,
+    user?.id
+  ]);
+
+
+
+
+
+
+
+
+
 
   const handleLogout = () => {
-    localStorage.removeItem("skillyUser");
-    localStorage.removeItem("skillyProfile");
+
+
+    localStorage.removeItem(
+      "skillyUser"
+    );
+
+
+    localStorage.removeItem(
+      "skillyProfile"
+    );
+
 
     navigate("/login");
+
+
   };
 
-  const handleProfile = () => {
-    navigate("/mi-perfil")
-  }
+
+
+
 
   return (
+
     <header className="navbar">
 
+
       <div className="navbar-container">
+
+
 
         <Link
           to="/"
@@ -65,99 +202,315 @@ function Navbar() {
         </Link>
 
 
+
+
+
         <nav className="navbar-menu">
 
-          <Link
-            to={isAdmin ? "/admin" : "/"}
-          >
-            Inicio
-          </Link>
 
-          <Link
-            to="/marketplace"
-            className="active-link"
-          >
-            Profesionales
-          </Link>
 
-          <Link to="/como-funciona">
-            Cómo funciona
-          </Link>
+          {/* SIN LOGIN */}
 
-          {isLoggedIn && !isAdmin && !isProfessional && (
-            <Link to="/mis-reservas">
-              Mis Reservas
-            </Link>
-          )}
-          {isLoggedIn && isProfessional && (
-            <>
-              <Link to="/horarios">Mi disponibilidad</Link>
-              <Link to="/reservas-recibidas">Reservas recibidas</Link>
-              <Link to="/servicios">Servicios</Link>
-              <Link to="/notificaciones" className="navbar-notifications-link">
-                Notificaciones
-                {unreadCount > 0 && <span className="navbar-notification-count">{unreadCount}</span>}
-              </Link>
+          {
+            !isLoggedIn && (
+
+              <>
+
+                <Link to="/">
+                  Inicio
+                </Link>
+
+
+                <Link to="/marketplace">
+                  Profesionales
+                </Link>
+
+
+                <Link to="/como-funciona">
+                  Cómo funciona
+                </Link>
+
+
               </>
-          )}
-          {isAdmin && (
-            <Link to="/admin/incidencias">
-              Incidencias
-            </Link>
-          )}
+
+            )
+
+          }
+
+
+
+
+
+
+          {/* ADMIN */}
+
+          {
+            isAdmin && (
+
+              <>
+
+                <Link to="/admin">
+                  Dashboard
+                </Link>
+
+
+                <Link to="/admin/incidencias">
+                  Incidencias
+                </Link>
+
+
+              </>
+
+            )
+
+          }
+
+
+
+
+
+
+
+          {/* PROFESIONAL */}
+
+          {
+            isProfessional && !isAdmin && (
+
+              <>
+
+                <Link to="/">
+                  Inicio
+                </Link>
+
+
+                <Link to="/marketplace">
+                  Profesionales
+                </Link>
+
+
+                <Link to="/horarios">
+                  Mi disponibilidad
+                </Link>
+
+
+                <Link to="/reservas-recibidas">
+                  Reservas recibidas
+                </Link>
+
+
+                <Link to="/servicios">
+                  Servicios
+                </Link>
+
+
+
+                <Link
+                  to="/notificaciones"
+                  className="navbar-notifications-link"
+                >
+
+                  Notificaciones
+
+
+                  {
+                    unreadCount > 0 && (
+
+                      <span
+                        className="navbar-notification-count"
+                      >
+                        {unreadCount}
+                      </span>
+
+                    )
+
+                  }
+
+
+                </Link>
+
+
+              </>
+
+            )
+
+          }
+
+
+
+
+
+
+
+
+
+          {/* ORGANIZACION */}
+
+          {
+            isOrganization && !isAdmin && (
+
+              <>
+
+                <Link to="/">
+                  Inicio
+                </Link>
+
+
+                <Link to="/marketplace">
+                  Profesionales
+                </Link>
+
+
+                <Link to="/mis-reservas">
+                  Mis reservas
+                </Link>
+
+
+              </>
+
+            )
+
+          }
+
+
+
 
         </nav>
 
 
+
+
+
+
+
+
         <div className="navbar-actions">
 
-          {isProfessional ? (
-            <button
-              type="button"
-              className="logout-button"
-              onClick={handleProfile}
-            >
-              Editar Perfil
-            </button>
-          ) : (<></>) }
-
-          {isLoggedIn ? (
 
 
-            <button
-              type="button"
-              className="logout-button"
-              onClick={handleLogout}
-            >
-              Cerrar sesión
-            </button>
+          {/* PERFIL PROFESIONAL */}
 
-          ) : (
+          {
+            isProfessional && (
 
-            <>
-              <Link
-                to="/login"
-                className="login-link"
+              <button
+
+                className="logout-button"
+
+                onClick={() =>
+                  navigate("/mi-perfil")
+                }
+
               >
-                Iniciar sesión
-              </Link>
 
-              <Link
-                to="/registro"
-                className="register-button"
+                Editar Perfil
+
+              </button>
+
+            )
+
+          }
+
+
+
+
+
+          {/* PERFIL ORGANIZACION */}
+
+          {
+            isOrganization && (
+
+              <button
+
+                className="logout-button"
+
+                onClick={() =>
+                  navigate("/mi-perfil")
+                }
+
               >
-                Registrarse
-              </Link>
-            </>
 
-          )}
+                Mi perfil
+
+              </button>
+
+            )
+
+          }
+
+
+
+
+
+
+          {/* LOGIN */}
+
+          {
+            isLoggedIn ?
+
+
+              (
+
+                <button
+
+                  className="logout-button"
+
+                  onClick={handleLogout}
+
+                >
+
+                  Cerrar sesión
+
+                </button>
+
+              )
+
+
+              :
+
+              (
+
+                <>
+
+                  <Link
+                    to="/login"
+                    className="login-link"
+                  >
+                    Iniciar sesión
+                  </Link>
+
+
+                  <Link
+                    to="/registro"
+                    className="register-button"
+                  >
+                    Registrarse
+                  </Link>
+
+
+                </>
+
+              )
+
+
+          }
+
+
 
         </div>
 
+
+
+
+
       </div>
 
+
     </header>
+
+
   );
+
 }
+
 
 export default Navbar;

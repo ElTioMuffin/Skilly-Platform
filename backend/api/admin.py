@@ -88,7 +88,7 @@ class ReviewAdmin(admin.ModelAdmin):
     list_display = (
         "professional",
         "client",
-        "service_request",
+        "appointment",
         "created_at",
     )
 

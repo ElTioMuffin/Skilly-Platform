@@ -44,9 +44,9 @@ function ProfessionalCard({ professional }) {
           {professional.profession || "Profesional"}
         </p>
 
-
+          
         <div className="reviews-count">
-          {professional.reviews_count || 0} reseñas
+          {professional.reviews?.length || 0} reseñas
         </div>
 
 

@@ -22,6 +22,7 @@ import MyAppointments from "./Pages/MyAppointments"
 import Schedule from "./Pages/Schedule";
 import Services from "./Pages/Services";
 import Notifications from "./Pages/Notifications";
+import DejarReview from "./Pages/DejarReview";
 
 import "./App.css";
 
@@ -34,7 +35,6 @@ function App() {
         <Navbar />
 
         <Routes>
-
           <Route
             path="/"
             element={<Home />}
@@ -107,11 +107,11 @@ function App() {
             element={<Incidencias />}
           />
           <Route path="/mi-perfil"
-            element={<ProfileEdit />} 
-            />
+            element={<ProfileEdit />}
+          />
 
           <Route path="/mis-servicios"
-            element={<MyAppointments />} 
+            element={<MyAppointments />}
           />
 
           <Route
@@ -125,6 +125,10 @@ function App() {
           <Route
             path="/notificaciones"
             element={<Notifications />}
+          />
+          <Route
+            path="/dejar-review/:id"
+            element={<DejarReview />}
           />
 
         </Routes>
