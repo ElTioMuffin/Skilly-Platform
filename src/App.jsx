@@ -20,6 +20,7 @@ import Incidencias from "./Pages/Admin/Incidencias"
 import ProfileEdit from "./Pages/ProfileEdit"
 import MyAppointments from "./Pages/MyAppointments"
 import Schedule from "./Pages/Schedule";
+import Services from "./Pages/Services";
 
 import "./App.css";
 
@@ -115,6 +116,10 @@ function App() {
           <Route
             path="/horarios"
             element={<Schedule />}
+          />
+          <Route
+            path="/servicios"
+            element={<Services />}
           />
 
         </Routes>

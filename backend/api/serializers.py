@@ -39,7 +39,12 @@ class ServiceSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-
+        read_only_fields = [
+            "id",
+            "professional",
+            "created_at",
+            "updated_at",
+        ]
 class ProfileSerializer(serializers.ModelSerializer):
 
     services = ServiceSerializer(

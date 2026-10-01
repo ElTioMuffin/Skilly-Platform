@@ -58,6 +58,48 @@ router.register(
     IncidentViewSet)
 
 router.register(
+    "profiles",
+    ProfileViewSet,
+    basename="profiles"
+)
+
+router.register(
+    "services",
+    ServiceViewSet,
+    basename="services"
+)
+
+router.register(
+    "service-requests",
+    ServiceRequestViewSet,
+    basename="service-requests"
+)
+
+router.register(
+    "reviews",
+    ReviewViewSet,
+    basename="reviews"
+)
+
+router.register(
+    "appointments",
+    AppointmentViewSet,
+    basename="appointments"
+)
+
+router.register(
+    "incidents",
+    IncidentViewSet,
+    basename="incidents"
+)
+
+router.register(
+    "availability",
+    ProfessionalAvailabilityViewSet,
+    basename="availability"
+)
+
+router.register(
 
 "availability",
 

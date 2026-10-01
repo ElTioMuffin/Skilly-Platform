@@ -1,127 +1,490 @@
-.schedule-container {
+.professional-page {
+    min-height: 100vh;
+    background: #f7f6f2;
+    color: #151515;
+}
 
+
+/* =========================================
+   HERO
+========================================= */
+
+.hero-section {
+    padding: 100px 8% 90px;
+    background: #151515;
+    color: white;
+}
+
+.hero-content {
+    max-width: 900px;
+}
+
+.hero-label,
+.section-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.hero-label {
+    margin-bottom: 25px;
+    opacity: .65;
+}
+
+.hero-content h1 {
+    margin: 0;
+    font-size: clamp(48px, 7vw, 90px);
+    line-height: .95;
+    letter-spacing: -4px;
+}
+
+.hero-content p {
+    max-width: 550px;
+    margin-top: 30px;
+    font-size: 18px;
+    line-height: 1.7;
+    color: #cfcfcf;
+}
+
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.about-section {
+    padding: 90px 8% 120px;
+}
+
+.section-container {
+    max-width: 1400px;
+    margin: auto;
+}
+
+.section-label {
+    color: #777;
+    margin-bottom: 14px;
+}
+
+.schedule-header {
     display: flex;
-
-    flex-direction: column;
-
-    gap: 80px;
-
-    margin-top: 50px;
-
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 45px;
 }
 
-
-
-.schedule-card {
-
-    background: white;
-
-    border: 1px solid #ededed;
-
-    border-radius: 32px;
-
-    padding: 40px;
-
-    max-width: 850px;
-
+.schedule-header h2 {
+    margin: 0;
+    font-size: clamp(40px, 5vw, 68px);
+    line-height: .95;
+    letter-spacing: -3px;
 }
 
-
-
-.schedule-card h3 {
-
-    font-size: 32px;
-
-    margin-bottom: 15px;
-
-}
-
-
-
-.schedule-card p {
-
+.schedule-header p {
+    margin-top: 25px;
     color: #666;
-
-    font-size: 17px;
-
+    max-width: 520px;
+    line-height: 1.6;
 }
 
 
+/* =========================================
+   MENSAJES
+========================================= */
+
+.schedule-message {
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    border: 1px solid #ddd;
+    background: white;
+    font-size: 14px;
+}
+
+.schedule-message.success {
+    border-left: 4px solid #111;
+}
+
+.schedule-message.error {
+    border-left: 4px solid #b33;
+    color: #8b2222;
+}
 
 
+/* =========================================
+   STATS
+========================================= */
 
-.schedule-fields {
-
+.schedule-stats {
     display: grid;
-
     grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 70px;
+}
 
-    gap: 25px;
+.stat-card {
+    background: white;
+    border: 1px solid #deddd8;
+    padding: 28px;
+}
 
-    margin: 40px 0;
+.stat-card span {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #777;
+    margin-bottom: 20px;
+}
 
+.stat-card strong {
+    display: block;
+    font-size: 36px;
+    letter-spacing: -1px;
+}
+
+.stat-card small {
+    display: block;
+    margin-top: 5px;
+    color: #777;
 }
 
 
+/* =========================================
+   WEEKLY HEADER
+========================================= */
+
+.weekly-header {
+    margin-bottom: 25px;
+}
+
+.weekly-header h3 {
+    margin: 0;
+    font-size: 32px;
+    letter-spacing: -1px;
+}
 
 
+/* =========================================
+   WEEKLY GRID
+========================================= */
+
+.weekly-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    margin-bottom: 80px;
+}
+
+.day-column {
+    min-height: 330px;
+    background: white;
+    border: 1px solid #deddd8;
+}
+
+.day-header {
+    padding: 18px;
+    border-bottom: 1px solid #deddd8;
+}
+
+.day-header span {
+    display: block;
+    font-size: 10px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.day-header strong {
+    display: block;
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+.day-content {
+    padding: 10px;
+}
+
+
+/* =========================================
+   EMPTY DAY
+========================================= */
+
+.no-schedule {
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    text-align: center;
+}
+
+.no-schedule span {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.no-schedule small {
+    font-size: 11px;
+}
+
+
+/* =========================================
+   TIME CARD
+========================================= */
+
+.time-card {
+    padding: 14px;
+    margin-bottom: 10px;
+    background: #f5f4ef;
+    border: 1px solid #e0dfd9;
+}
+
+.time-card.inactive {
+    opacity: .45;
+}
+
+.time-card-top {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    color: #666;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    display: inline-block;
+    border-radius: 50%;
+    background: #111;
+}
+
+.time-card.inactive .status-dot {
+    background: #aaa;
+}
+
+.time-range {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 14px 0;
+    font-size: 17px;
+    letter-spacing: -.5px;
+}
+
+.time-range span {
+    color: #aaa;
+    font-weight: 400;
+}
+
+.time-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.toggle-button,
+.delete-button {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    padding: 5px 0;
+    font-size: 11px;
+}
+
+.toggle-button {
+    color: #333;
+    font-weight: 600;
+}
+
+.delete-button {
+    color: #999;
+}
+
+.delete-button:hover {
+    color: #b33;
+}
+
+
+/* =========================================
+   ADD SCHEDULE
+========================================= */
+
+.add-schedule-section {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 50px;
+    padding: 45px;
+    background: #151515;
+    color: white;
+}
+
+.add-schedule-intro h3 {
+    margin: 0;
+    font-size: 32px;
+    letter-spacing: -1px;
+}
+
+.add-schedule-intro p {
+    color: #aaa;
+    line-height: 1.6;
+    max-width: 350px;
+}
+
+.add-schedule-intro .section-label {
+    color: #777;
+}
+
+
+/* =========================================
+   FORM
+========================================= */
+
+.schedule-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+}
 
 .form-group label {
-
     display: block;
-
-    font-size: 12px;
-
+    margin-bottom: 8px;
+    font-size: 11px;
     text-transform: uppercase;
-
-    letter-spacing: 2px;
-
-    color: #888;
-
-    margin-bottom: 10px;
-
+    letter-spacing: 1px;
+    color: #ffffff;
 }
 
-
+.schedule-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ffffff !important;
+}
 
 .form-group input,
 .form-group select {
-
     width: 100%;
+    box-sizing: border-box;
+    padding: 15px;
+    border: 1px solid #444;
+    background: #222;
+    color: white;
+    font-size: 14px;
+}
 
-    padding: 16px;
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: white;
+}
 
-    border-radius: 18px;
 
-    border: 1px solid #ddd;
+/* =========================================
+   BUTTON
+========================================= */
 
-    font-size: 16px;
+.hero-button {
+    border: 0;
+    padding: 16px 22px;
+    cursor: pointer;
+    font-weight: 700;
+    white-space: nowrap;
+}
 
+.hero-button.primary {
     background: white;
+    color: #111;
+}
 
+.hero-button.primary:hover {
+    background: #ddd;
+}
+
+.hero-button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
 }
 
 
+/* =========================================
+   LOADING
+========================================= */
 
-.schedule-list {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 30px;
-
+.loading-state {
+    padding: 80px;
+    text-align: center;
+    color: #777;
+    background: white;
+    border: 1px solid #deddd8;
 }
 
 
+/* =========================================
+   RESPONSIVE
+========================================= */
 
+@media (max-width: 1100px) {
 
-@media(max-width:900px) {
+    .weekly-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
 
-    .schedule-fields {
-
+    .add-schedule-section {
         grid-template-columns: 1fr;
+    }
 
+    .schedule-form {
+        grid-template-columns: 1fr 1fr;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .hero-section {
+        padding: 70px 25px;
+    }
+
+    .about-section {
+        padding: 60px 20px 80px;
+    }
+
+    .hero-content h1 {
+        letter-spacing: -2px;
+    }
+
+    .schedule-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .weekly-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .day-column {
+        min-height: auto;
+    }
+
+    .no-schedule {
+        min-height: 100px;
+    }
+
+    .add-schedule-section {
+        padding: 30px 20px;
+    }
+
+    .schedule-form {
+        grid-template-columns: 1fr;
     }
 
 }
