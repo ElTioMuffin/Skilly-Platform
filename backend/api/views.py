@@ -322,6 +322,74 @@ class ServiceRequestViewSet(
             ),
         )
 
+    def perform_update(self, serializer):
+        was_completed = serializer.instance.status == "Completada"
+        service_request = serializer.save()
+        if service_request.status == "Completada" and not was_completed:
+            service_name = service_request.service.name if service_request.service else "el servicio"
+            amount = (
+                f" por ${service_request.budget:,.0f}"
+                if service_request.budget is not None
+                else ""
+            )
+            PlatformNotification.objects.create(
+                recipient=service_request.client,
+                service_request=service_request,
+                title="Tu orden está lista para pagar",
+                message=(
+                    f"El profesional completó {service_name}{amount}. "
+                    "Puedes realizar el pago desde tus solicitudes."
+                ),
+                link=f"/mis-solicitudes?solicitud={service_request.id}",
+            )
+
+    @action(detail=True, methods=["post"])
+    def pay(self, request, pk=None):
+        service_request = self.get_object()
+        if str(request.data.get("client")) != str(service_request.client_id):
+            return Response({"error": "Solo la organización que creó la orden puede pagarla."}, status=status.HTTP_403_FORBIDDEN)
+        if service_request.status != "Completada":
+            return Response({"error": "La orden aún no está lista para pagar."}, status=status.HTTP_400_BAD_REQUEST)
+        if service_request.payment_status == "Pagado":
+            return Response({"payment_status": "Pagado", "success": True, "message": "Esta orden ya fue pagada."})
+
+        outcomes = {
+            "success": ("Pagado", "Pago realizado correctamente."),
+            "failure": ("Fallido", "El pago fue rechazado. Puedes intentarlo nuevamente."),
+            "insufficient_balance": ("Saldo insuficiente", "El saldo es insuficiente. Puedes elegir otro medio e intentarlo nuevamente."),
+            "unknown_error": ("Error desconocido", "Ocurrió un error desconocido. Inténtalo nuevamente."),
+        }
+        outcome = outcomes.get(request.data.get("outcome"))
+        if not outcome:
+            return Response({"error": "Selecciona un resultado de pago válido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        payment_status, message = outcome
+        service_request.payment_status = payment_status
+        service_request.save(update_fields=["payment_status", "updated_at"])
+
+        if payment_status == "Pagado":
+            organization = getattr(service_request.client, "profile", None)
+            organization_name = organization.full_name if organization else service_request.client.username
+            service_name = service_request.service.name if service_request.service else "el servicio"
+            amount = (
+                f"${service_request.budget:,.0f}"
+                if service_request.budget is not None
+                else ""
+            )
+            PlatformNotification.objects.create(
+                recipient=service_request.professional.user,
+                service_request=service_request,
+                title="Pago recibido",
+                message=f"{organization_name} pagó {service_name}{f' ({amount})' if amount else ''}.",
+                link=f"/solicitudes/{service_request.professional_id}?solicitud={service_request.id}",
+            )
+
+        return Response({
+            "payment_status": service_request.payment_status,
+            "success": payment_status == "Pagado",
+            "message": message,
+        })
+
 
 class PlatformNotificationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PlatformNotificationSerializer

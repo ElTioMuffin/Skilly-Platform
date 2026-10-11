@@ -125,6 +125,14 @@ class ServiceRequest(models.Model):
         ("Cancelada", "Cancelada"),
     ]
 
+    PAYMENT_STATUS_CHOICES = [
+        ("Pendiente", "Pendiente"),
+        ("Pagado", "Pagado"),
+        ("Fallido", "Fallido"),
+        ("Saldo insuficiente", "Saldo insuficiente"),
+        ("Error desconocido", "Error desconocido"),
+    ]
+
     client = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -181,6 +189,12 @@ class ServiceRequest(models.Model):
         max_length=20,
         choices=STATUS_CHOICES,
         default="Pendiente"
+    )
+
+    payment_status = models.CharField(
+        max_length=24,
+        choices=PAYMENT_STATUS_CHOICES,
+        default="Pendiente",
     )
 
     created_at = models.DateTimeField(

@@ -116,9 +116,11 @@ class ServiceRequestSerializer(serializers.ModelSerializer):
             "budget",
             "modality",
             "status",
+            "payment_status",
             "created_at",
             "updated_at",
         ]
+        read_only_fields = ["id", "payment_status", "created_at", "updated_at"]
 
 class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:

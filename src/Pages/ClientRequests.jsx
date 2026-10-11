@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 
 function ClientRequests() {
+  const [searchParams] = useSearchParams();
+  const highlightedRequestId = searchParams.get("solicitud");
   const [requests, setRequests] = useState([]);
   const [reviews, setReviews] = useState([]);
 
@@ -13,11 +15,22 @@ function ClientRequests() {
   const [error, setError] = useState("");
   const [reviewError, setReviewError] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState({});
+  const [paymentOpen, setPaymentOpen] = useState({});
+  const [paymentLoading, setPaymentLoading] = useState(null);
+  const [paymentFeedback, setPaymentFeedback] = useState({});
 
 
   useEffect(() => {
     loadRequests();
   }, []);
+
+  useEffect(() => {
+    if (!highlightedRequestId || !requests.length) return;
+    document.getElementById(`client-request-${highlightedRequestId}`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [highlightedRequestId, requests]);
 
 
   const loadRequests = async () => {
@@ -159,6 +172,40 @@ function ClientRequests() {
       ...previous,
       [requestId]: value,
     }));
+  };
+
+  const simulatePayment = async (request, outcome) => {
+    const storedUser = JSON.parse(localStorage.getItem("skillyUser") || "null");
+    if (!storedUser?.id) return;
+    setPaymentLoading(request.id);
+    setPaymentFeedback((current) => ({ ...current, [request.id]: null }));
+    try {
+      const response = await axios.post(
+        `http://127.0.0.1:8000/api/solicitudes/${request.id}/pay/`,
+        { client: storedUser.id, outcome }
+      );
+      const result = response.data;
+      setRequests((current) => current.map((item) => item.id === request.id
+        ? { ...item, payment_status: result.payment_status }
+        : item));
+      setPaymentFeedback((current) => ({
+        ...current,
+        [request.id]: { message: result.message, success: result.success },
+      }));
+      if (result.success) {
+        setPaymentOpen((current) => ({ ...current, [request.id]: false }));
+      }
+    } catch (error) {
+      setPaymentFeedback((current) => ({
+        ...current,
+        [request.id]: {
+          message: error.response?.data?.error || "No se pudo procesar el pago.",
+          success: false,
+        },
+      }));
+    } finally {
+      setPaymentLoading(null);
+    }
   };
 
 
@@ -431,8 +478,9 @@ function ClientRequests() {
 
               return (
                 <article
-                  className="client-request-card"
+                  className={`client-request-card${String(request.id) === highlightedRequestId ? " request-card-highlighted" : ""}`}
                   key={request.id}
+                  id={`client-request-${request.id}`}
                 >
 
                   <div className="client-request-header">
@@ -570,6 +618,62 @@ function ClientRequests() {
                   >
                     Ver perfil del profesional →
                   </Link>
+
+                  {request.status === "Completada" && request.payment_status === "Pagado" && (
+                    <div className="client-payment-paid">✓ Pago completado</div>
+                  )}
+
+                  {request.status === "Completada" && request.payment_status !== "Pagado" && (
+                    <section className="client-payment-section">
+                      <div className="client-payment-heading">
+                        <div>
+                          <span className="section-label">ORDEN COMPLETADA</span>
+                          <h3>Tu orden está lista para pagar</h3>
+                          <p>Pago de demostración · no se realizará un cobro real.</p>
+                        </div>
+                        {request.budget && (
+                          <strong className="client-payment-amount">
+                            ${Number(request.budget).toLocaleString("es-CL")}
+                          </strong>
+                        )}
+                      </div>
+
+                      {!paymentOpen[request.id] ? (
+                        <button
+                          type="button"
+                          className="client-payment-button"
+                          onClick={() => setPaymentOpen((current) => ({ ...current, [request.id]: true }))}
+                        >
+                          Realizar pago
+                        </button>
+                      ) : (
+                        <div className="client-payment-flows">
+                          <p>Elige un resultado para simular el flujo:</p>
+                          <button type="button" disabled={paymentLoading === request.id} onClick={() => simulatePayment(request, "success")}>
+                            Pago correcto
+                          </button>
+                          <button type="button" disabled={paymentLoading === request.id} onClick={() => simulatePayment(request, "failure")}>
+                            Pago fallido
+                          </button>
+                          <button type="button" disabled={paymentLoading === request.id} onClick={() => simulatePayment(request, "insufficient_balance")}>
+                            Saldo insuficiente
+                          </button>
+                          <button type="button" disabled={paymentLoading === request.id} onClick={() => simulatePayment(request, "unknown_error")}>
+                            Error desconocido
+                          </button>
+                          <button type="button" className="client-payment-cancel" onClick={() => setPaymentOpen((current) => ({ ...current, [request.id]: false }))}>
+                            Volver
+                          </button>
+                        </div>
+                      )}
+                      {paymentLoading === request.id && <p className="client-payment-feedback">Procesando pago de demostración…</p>}
+                      {paymentFeedback[request.id] && (
+                        <p className={`client-payment-feedback${paymentFeedback[request.id].success ? " success" : " failure"}`}>
+                          {paymentFeedback[request.id].message}
+                        </p>
+                      )}
+                    </section>
+                  )}
 
 
                   {/* RESEÑA */}
