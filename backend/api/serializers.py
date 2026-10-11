@@ -133,6 +133,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "date",
             "time",
             "status",
+            "payment_status",
             "notes",
             "created_at",
             "updated_at",
@@ -140,6 +141,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
+            "payment_status",
             "created_at",
             "updated_at",
         ]

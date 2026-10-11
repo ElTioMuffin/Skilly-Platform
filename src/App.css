@@ -3508,6 +3508,423 @@
   outline-offset: 3px;
 }
 
+.client-payment-section {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ded9ff;
+  border-radius: 14px;
+  background: #fbfaff;
+}
+
+.client-bookings-notifications-link {
+  display: inline-flex;
+  margin-top: 10px;
+  color: #4d36c8;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.client-bookings-notifications-link:hover {
+  text-decoration: underline;
+}
+
+.client-payment-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.client-payment-heading h3 {
+  margin: 6px 0;
+  color: #1b1b1b;
+}
+
+.client-payment-heading p {
+  margin: 0;
+  color: #666666;
+  font-size: 13px;
+}
+
+.client-payment-status {
+  justify-self: start;
+  margin: 0;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #f0eff4;
+  color: #4b4656;
+  font-size: 13px;
+}
+
+.client-payment-status-fallido,
+.client-payment-status-error-desconocido {
+  background: #fff0f0;
+  color: #a52a2a;
+}
+
+.client-payment-status-saldo-insuficiente {
+  background: #fff6e5;
+  color: #805400;
+}
+
+.client-payment-status-pagado {
+  background: #eaf6ef;
+  color: #157347;
+}
+
+.client-payment-amount {
+  color: #22166d;
+  font-size: 20px;
+  white-space: nowrap;
+}
+
+.client-payment-button,
+.client-payment-flows button {
+  min-height: 40px;
+  padding: 10px 14px;
+  border: 1px solid #171717;
+  border-radius: 8px;
+  background: #171717;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+a.client-payment-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.client-payment-button {
+  justify-self: start;
+}
+
+.client-payment-flows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.client-payment-flows p {
+  flex-basis: 100%;
+  margin: 0 0 2px;
+  color: #555555;
+}
+
+.client-payment-flows button {
+  border-color: #d8d8d8;
+  background: #ffffff;
+  color: #222222;
+  font-size: 13px;
+}
+
+.client-payment-flows button:hover {
+  border-color: #171717;
+}
+
+.client-payment-flows button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.client-payment-flows .client-payment-cancel {
+  border-color: transparent;
+  background: transparent;
+  color: #666666;
+}
+
+.client-payment-feedback {
+  margin: 0;
+  font-size: 14px;
+}
+
+.client-payment-feedback.success,
+.client-payment-paid {
+  color: #157347;
+  font-weight: 600;
+}
+
+.client-payment-feedback.failure {
+  color: #a52a2a;
+}
+
+.client-payment-paid {
+  margin-top: 16px;
+}
+
+.payment-portal {
+  min-height: calc(100vh - 76px);
+  padding: 48px 20px 80px;
+  background: #f6f6f8;
+}
+
+.payment-portal-wrap {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.payment-back-link {
+  display: inline-block;
+  margin-bottom: 18px;
+  color: #454545;
+  text-decoration: none;
+}
+
+.payment-back-link:hover {
+  color: #111111;
+}
+
+.payment-portal-card {
+  width: min(620px, 100%);
+  margin: 0 auto;
+  padding: clamp(22px, 5vw, 36px);
+  border: 1px solid #e8e8ec;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 16px 50px rgb(20 20 40 / 7%);
+}
+
+.payment-portal-header {
+  margin-bottom: 24px;
+}
+
+.payment-portal-header h1,
+.payment-portal-card h1 {
+  margin: 8px 0;
+  color: #171717;
+  font-size: clamp(26px, 5vw, 34px);
+}
+
+.payment-portal-header p,
+.payment-portal-card > p {
+  margin: 0;
+  color: #6d6d73;
+}
+
+.payment-order-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 22px 0 28px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #f7f7fa;
+}
+
+.payment-order-summary div {
+  display: grid;
+  gap: 5px;
+}
+
+.payment-order-summary span {
+  color: #777780;
+  font-size: 12px;
+}
+
+.payment-order-summary strong {
+  color: #222228;
+  font-size: 14px;
+}
+
+.payment-test-card-list h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
+}
+
+.payment-test-card-list > p {
+  margin: 0 0 14px;
+  color: #777780;
+  font-size: 13px;
+}
+
+.payment-test-card {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin-top: 9px;
+  padding: 14px;
+  border: 1px solid #e1e1e6;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #222228;
+  text-align: left;
+  cursor: pointer;
+}
+
+.payment-test-card.selected {
+  border-color: #6d58e8;
+  box-shadow: 0 0 0 2px rgb(109 88 232 / 14%);
+}
+
+.payment-card-chip {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: #efedff;
+  color: #5944d1;
+  font-size: 19px;
+}
+
+.payment-card-details {
+  display: grid;
+  gap: 4px;
+}
+
+.payment-card-details strong {
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.payment-card-details small {
+  color: #898992;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.payment-card-flow {
+  color: #5d49d6;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.payment-submit-button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 22px;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 10px;
+  background: #171717;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.payment-submit-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.payment-simulation-note {
+  display: block;
+  margin-top: 12px;
+  color: #85858d;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.payment-portal-error {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  background: #fff0f0;
+  color: #a52a2a;
+  font-size: 14px;
+}
+
+.payment-result-success {
+  text-align: center;
+}
+
+.payment-result-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: #e7f7ee;
+  color: #157347;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.payment-result-icon.failure {
+  background: #fff0f0;
+  color: #a52a2a;
+}
+
+.payment-result-failure {
+  text-align: center;
+}
+
+.payment-result-failure > p {
+  margin: 12px 0 0;
+  color: #6d6d73;
+}
+
+.payment-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.payment-error-actions .payment-submit-button {
+  margin-top: 0;
+}
+
+.payment-return-button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 22px;
+  padding: 12px 18px;
+  border: 1px solid #d8d8df;
+  border-radius: 10px;
+  color: #33333a;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.payment-error-actions .payment-return-button {
+  margin-top: 0;
+}
+
+.payment-result-success .payment-submit-button {
+  margin-top: 24px;
+}
+
+@media (max-width: 520px) {
+  .payment-order-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-test-card {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .payment-card-flow {
+    grid-column: 2;
+    text-align: left;
+  }
+}
+
+@media (max-width: 560px) {
+  .client-payment-heading {
+    flex-direction: column;
+  }
+}
+
 
 /* MENSAJES */
 
@@ -3988,6 +4405,61 @@
   margin: 0;
   font-size: 26px;
   line-height: 1.2;
+}
+
+.professional-booking-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.professional-booking-status-item {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+}
+
+.professional-booking-status-item > span {
+  color: #777777;
+  font-size: 11px;
+}
+
+.booking-payment-status {
+  display: inline-flex;
+  min-height: 29px;
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.booking-payment-status-pendiente {
+  background: #fff4d6;
+  color: #805b00;
+}
+
+.booking-payment-status-pagado {
+  background: #e4f5eb;
+  color: #216a3c;
+}
+
+.booking-payment-status-fallido,
+.booking-payment-status-error-desconocido {
+  background: #fcebea;
+  color: #a33a32;
+}
+
+.booking-payment-status-saldo-insuficiente {
+  background: #fff0df;
+  color: #94530d;
+}
+
+.booking-payment-status-no-solicitado {
+  background: #f2f2f2;
+  color: #555555;
 }
 
 

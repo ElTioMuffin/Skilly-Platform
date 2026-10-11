@@ -24,6 +24,7 @@ function ProfessionalBookings() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        setError("");
         if (!storedUser || !professionalId) {
           setError(
             "No se encontró la información del profesional."
@@ -80,6 +81,8 @@ function ProfessionalBookings() {
     };
 
     loadData();
+    const refreshInterval = window.setInterval(loadData, 5000);
+    return () => window.clearInterval(refreshInterval);
   }, [professionalId]);
 
   useEffect(() => {
@@ -226,11 +229,26 @@ function ProfessionalBookings() {
 
                   </div>
 
-                  <span
-                    className={`booking-status booking-status-${reserva.status?.toLowerCase()}`}
-                  >
-                    {reserva.status}
-                  </span>
+                  <div className="professional-booking-statuses">
+                    <div className="professional-booking-status-item">
+                      <span>Estado de reserva</span>
+                      <strong
+                        className={`booking-status booking-status-${reserva.status?.toLowerCase()}`}
+                      >
+                        {reserva.status}
+                      </strong>
+                    </div>
+                    <div className="professional-booking-status-item">
+                      <span>Estado de pago</span>
+                      <strong
+                        className={`booking-payment-status booking-payment-status-${(reserva.status === "Completada" ? reserva.payment_status || "Pendiente" : "No solicitado").toLowerCase().replace(/\s+/g, "-")}`}
+                      >
+                        {reserva.status === "Completada"
+                          ? reserva.payment_status || "Pendiente"
+                          : "No solicitado"}
+                      </strong>
+                    </div>
+                  </div>
 
                 </div>
 

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 
 function MisReservas() {
+  const [searchParams] = useSearchParams();
+  const highlightedReservationId = searchParams.get("reserva");
   const [reservas, setReservas] = useState([]);
   const [profesionales, setProfesionales] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +58,14 @@ function MisReservas() {
 
     loadData();
   }, [storedUser?.id]);
+
+  useEffect(() => {
+    if (!highlightedReservationId || !reservas.length) return;
+    document.getElementById(`my-reservation-${highlightedReservationId}`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [highlightedReservationId, reservas]);
 
   const getProfessional = (professionalId) => {
     return profesionales.find(
@@ -134,6 +144,13 @@ function MisReservas() {
             reservado con profesionales de Skilly.
           </p>
 
+          <Link
+            to="/notificaciones"
+            className="client-bookings-notifications-link"
+          >
+            Ver notificaciones
+          </Link>
+
         </header>
 
         {error && (
@@ -174,11 +191,18 @@ function MisReservas() {
                 getProfessional(
                   reserva.professional
                 );
+              const paymentStatus = reserva.payment_status || "Pendiente";
+              const paymentStatusClass = paymentStatus
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .replace(/\s+/g, "-");
 
               return (
                 <article
-                  className="booking-card"
+                  className={`booking-card${String(reserva.id) === highlightedReservationId ? " request-card-highlighted" : ""}`}
                   key={reserva.id}
+                  id={`my-reservation-${reserva.id}`}
                 >
 
                   <div className="booking-card-header">
@@ -274,6 +298,29 @@ function MisReservas() {
                     >
                       Ver perfil del profesional
                     </Link>
+                  )}
+
+                  {reserva.status === "Completada" && reserva.payment_status === "Pagado" && (
+                    <div className="client-payment-paid">✓ Pago completado</div>
+                  )}
+
+                  {reserva.status === "Completada" && reserva.payment_status !== "Pagado" && (
+                    <section className="client-payment-section">
+                      <div className="client-payment-heading">
+                        <div>
+                          <span className="section-label">RESERVA COMPLETADA</span>
+                          <h3>Tu reserva está lista para pagar</h3>
+                          <p>Pago de demostración · no se realizará un cobro real.</p>
+                        </div>
+                      </div>
+                      <p className={`client-payment-status client-payment-status-${paymentStatusClass}`}>
+                        Estado del pago: <strong>{paymentStatus}</strong>
+                      </p>
+                      <Link
+                        to={`/pago/reserva/${reserva.id}`}
+                        className="client-payment-button"
+                      >{paymentStatus === "Pendiente" ? "Realizar pago" : "Reintentar pago"}</Link>
+                    </section>
                   )}
 
                   {reserva.status == "Completada" && (

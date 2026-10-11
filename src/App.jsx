@@ -23,6 +23,7 @@ import Schedule from "./Pages/Schedule";
 import Services from "./Pages/Services";
 import Notifications from "./Pages/Notifications";
 import DejarReview from "./Pages/DejarReview";
+import PaymentPortal from "./Pages/PaymentPortal";
 
 import "./App.css";
 
@@ -88,6 +89,10 @@ function App() {
           <Route
             path="/mis-reservas"
             element={<MisReservas />}
+          />
+          <Route
+            path="/pago/:type/:id"
+            element={<PaymentPortal />}
           />
 
           <Route

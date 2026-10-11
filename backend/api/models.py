@@ -250,6 +250,14 @@ class Appointment(models.Model):
         ("Completada", "Completada"),
     ]
 
+    PAYMENT_STATUS_CHOICES = [
+        ("Pendiente", "Pendiente"),
+        ("Pagado", "Pagado"),
+        ("Fallido", "Fallido"),
+        ("Saldo insuficiente", "Saldo insuficiente"),
+        ("Error desconocido", "Error desconocido"),
+    ]
+
     client = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -276,6 +284,12 @@ class Appointment(models.Model):
         max_length=20,
         choices=STATUS_CHOICES,
         default="Pendiente"
+    )
+
+    payment_status = models.CharField(
+        max_length=24,
+        choices=PAYMENT_STATUS_CHOICES,
+        default="Pendiente",
     )
 
     notes = models.TextField(

@@ -501,6 +501,66 @@ class AppointmentViewSet(
             link=f"/reservas-recibidas?reserva={appointment.id}",
         )
 
+    def perform_update(self, serializer):
+        was_completed = serializer.instance.status == "Completada"
+        appointment = serializer.save()
+        if appointment.status == "Completada" and not was_completed:
+            amount = f"${appointment.service.price:,.0f}"
+            PlatformNotification.objects.create(
+                recipient=appointment.client,
+                appointment=appointment,
+                title="Tu reserva está lista para pagar",
+                message=(
+                    f"{appointment.professional.full_name} completó "
+                    f"{appointment.service.name} ({amount}). Horario: "
+                    f"{appointment.date.strftime('%d-%m-%Y')} "
+                    f"{appointment.time.strftime('%H:%M')}."
+                ),
+                link=f"/mis-reservas?reserva={appointment.id}",
+            )
+
+    @action(detail=True, methods=["post"])
+    def pay(self, request, pk=None):
+        appointment = self.get_object()
+        if str(request.data.get("client")) != str(appointment.client_id):
+            return Response({"error": "Solo la organización que creó la reserva puede pagarla."}, status=status.HTTP_403_FORBIDDEN)
+        if appointment.status != "Completada":
+            return Response({"error": "La reserva aún no está lista para pagar."}, status=status.HTTP_400_BAD_REQUEST)
+        if appointment.payment_status == "Pagado":
+            return Response({"payment_status": "Pagado", "success": True, "message": "Esta reserva ya fue pagada."})
+
+        outcomes = {
+            "success": ("Pagado", "Pago realizado correctamente."),
+            "failure": ("Fallido", "El pago fue rechazado. Puedes intentarlo nuevamente."),
+            "insufficient_balance": ("Saldo insuficiente", "El saldo es insuficiente. Puedes intentarlo nuevamente."),
+            "unknown_error": ("Error desconocido", "Ocurrió un error desconocido. Inténtalo nuevamente."),
+        }
+        outcome = outcomes.get(request.data.get("outcome"))
+        if not outcome:
+            return Response({"error": "Selecciona un resultado de pago válido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        payment_status, message = outcome
+        appointment.payment_status = payment_status
+        appointment.save(update_fields=["payment_status", "updated_at"])
+
+        if payment_status == "Pagado":
+            organization = getattr(appointment.client, "profile", None)
+            organization_name = organization.full_name if organization else appointment.client.username
+            amount = f"${appointment.service.price:,.0f}"
+            PlatformNotification.objects.create(
+                recipient=appointment.professional.user,
+                appointment=appointment,
+                title="Pago recibido",
+                message=f"{organization_name} pagó {appointment.service.name} ({amount}).",
+                link=f"/reservas-recibidas?reserva={appointment.id}",
+            )
+
+        return Response({
+            "payment_status": appointment.payment_status,
+            "success": payment_status == "Pagado",
+            "message": message,
+        })
+
 
 # =============================================================
 # LOGIN

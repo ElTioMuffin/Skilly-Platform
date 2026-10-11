@@ -67,7 +67,8 @@ function Navbar() {
 
 
     if (
-      !isProfessional ||
+      (!isProfessional && !isOrganization) ||
+      isAdmin ||
       !user?.id
     ) {
 
@@ -151,6 +152,8 @@ function Navbar() {
 
   }, [
     isProfessional,
+    isOrganization,
+    isAdmin,
     user?.id
   ]);
 
@@ -362,6 +365,18 @@ function Navbar() {
 
                 <Link to="/mis-reservas">
                   Mis reservas
+                </Link>
+
+                <Link
+                  to="/notificaciones"
+                  className="navbar-notifications-link"
+                >
+                  Notificaciones
+                  {unreadCount > 0 && (
+                    <span className="navbar-notification-count">
+                      {unreadCount}
+                    </span>
+                  )}
                 </Link>
 
 

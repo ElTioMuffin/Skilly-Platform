@@ -15,9 +15,6 @@ function ClientRequests() {
   const [error, setError] = useState("");
   const [reviewError, setReviewError] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState({});
-  const [paymentOpen, setPaymentOpen] = useState({});
-  const [paymentLoading, setPaymentLoading] = useState(null);
-  const [paymentFeedback, setPaymentFeedback] = useState({});
 
 
   useEffect(() => {
@@ -173,41 +170,6 @@ function ClientRequests() {
       [requestId]: value,
     }));
   };
-
-  const simulatePayment = async (request, outcome) => {
-    const storedUser = JSON.parse(localStorage.getItem("skillyUser") || "null");
-    if (!storedUser?.id) return;
-    setPaymentLoading(request.id);
-    setPaymentFeedback((current) => ({ ...current, [request.id]: null }));
-    try {
-      const response = await axios.post(
-        `http://127.0.0.1:8000/api/solicitudes/${request.id}/pay/`,
-        { client: storedUser.id, outcome }
-      );
-      const result = response.data;
-      setRequests((current) => current.map((item) => item.id === request.id
-        ? { ...item, payment_status: result.payment_status }
-        : item));
-      setPaymentFeedback((current) => ({
-        ...current,
-        [request.id]: { message: result.message, success: result.success },
-      }));
-      if (result.success) {
-        setPaymentOpen((current) => ({ ...current, [request.id]: false }));
-      }
-    } catch (error) {
-      setPaymentFeedback((current) => ({
-        ...current,
-        [request.id]: {
-          message: error.response?.data?.error || "No se pudo procesar el pago.",
-          success: false,
-        },
-      }));
-    } finally {
-      setPaymentLoading(null);
-    }
-  };
-
 
   const submitReview = async (request) => {
 
@@ -638,40 +600,12 @@ function ClientRequests() {
                         )}
                       </div>
 
-                      {!paymentOpen[request.id] ? (
-                        <button
-                          type="button"
-                          className="client-payment-button"
-                          onClick={() => setPaymentOpen((current) => ({ ...current, [request.id]: true }))}
-                        >
-                          Realizar pago
-                        </button>
-                      ) : (
-                        <div className="client-payment-flows">
-                          <p>Elige un resultado para simular el flujo:</p>
-                          <button type="button" disabled={paymentLoading === request.id} onClick={() => simulatePayment(request, "success")}>
-                            Pago correcto
-                          </button>
-                          <button type="button" disabled={paymentLoading === request.id} onClick={() => simulatePayment(request, "failure")}>
-                            Pago fallido
-                          </button>
-                          <button type="button" disabled={paymentLoading === request.id} onClick={() => simulatePayment(request, "insufficient_balance")}>
-                            Saldo insuficiente
-                          </button>
-                          <button type="button" disabled={paymentLoading === request.id} onClick={() => simulatePayment(request, "unknown_error")}>
-                            Error desconocido
-                          </button>
-                          <button type="button" className="client-payment-cancel" onClick={() => setPaymentOpen((current) => ({ ...current, [request.id]: false }))}>
-                            Volver
-                          </button>
-                        </div>
-                      )}
-                      {paymentLoading === request.id && <p className="client-payment-feedback">Procesando pago de demostración…</p>}
-                      {paymentFeedback[request.id] && (
-                        <p className={`client-payment-feedback${paymentFeedback[request.id].success ? " success" : " failure"}`}>
-                          {paymentFeedback[request.id].message}
-                        </p>
-                      )}
+                      <Link
+                        to={`/pago/orden/${request.id}`}
+                        className="client-payment-button"
+                      >
+                        Realizar pago
+                      </Link>
                     </section>
                   )}
 
