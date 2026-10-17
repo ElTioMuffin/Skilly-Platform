@@ -52,6 +52,24 @@ function Login() {
         JSON.stringify(response.data.user)
       );
 
+      if (response.data.user_token) {
+        localStorage.setItem("skillyUserToken", response.data.user_token);
+      } else {
+        localStorage.removeItem("skillyUserToken");
+      }
+
+      if (response.data.admin_token) {
+        localStorage.setItem("skillyAdminToken", response.data.admin_token);
+      } else {
+        localStorage.removeItem("skillyAdminToken");
+      }
+
+      if (response.data.master_token) {
+        localStorage.setItem("skillyMasterToken", response.data.master_token);
+      } else {
+        localStorage.removeItem("skillyMasterToken");
+      }
+
       // Guardamos el perfil si existe
       if (response.data.profile) {
         localStorage.setItem(
@@ -60,7 +78,11 @@ function Login() {
         );
       }
 
-      if (response.data.user.is_staff) {
+      if (response.data.user.is_superuser) {
+
+        navigate("/master/admins");
+
+      } else if (response.data.user.is_staff) {
 
         navigate("/admin");
 

@@ -48,6 +48,9 @@ function Navbar() {
   const isAdmin =
     user?.is_staff === true;
 
+  const isMaster =
+    user?.is_superuser === true;
+
 
 
   const isProfessional =
@@ -173,6 +176,10 @@ function Navbar() {
       "skillyUser"
     );
 
+    localStorage.removeItem("skillyAdminToken");
+    localStorage.removeItem("skillyMasterToken");
+    localStorage.removeItem("skillyUserToken");
+
 
     localStorage.removeItem(
       "skillyProfile"
@@ -261,6 +268,12 @@ function Navbar() {
                   Incidencias
                 </Link>
 
+                {isMaster && (
+                  <Link to="/master/admins">
+                    Panel maestro
+                  </Link>
+                )}
+
 
               </>
 
@@ -283,11 +296,6 @@ function Navbar() {
 
                 <Link to="/">
                   Inicio
-                </Link>
-
-
-                <Link to="/marketplace">
-                  Profesionales
                 </Link>
 
 

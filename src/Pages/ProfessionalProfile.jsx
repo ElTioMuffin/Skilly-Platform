@@ -10,6 +10,14 @@ function ProfessionalProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  let currentProfile = null;
+  try {
+    currentProfile = JSON.parse(localStorage.getItem("skillyProfile") || "null");
+  } catch {
+    currentProfile = null;
+  }
+  const canBook = currentProfile?.role !== "professional";
+
   useEffect(() => {
     const loadProfessional = async () => {
       try {
@@ -308,13 +316,15 @@ function ProfessionalProfile() {
                   </button> */}
 
 
-                  <button
-                    type="button"
-                    className="profile-book-button"
-                    onClick={handleBookAppointment}
-                  >
-                    Reservar hora
-                  </button>
+                  {canBook && (
+                    <button
+                      type="button"
+                      className="profile-book-button"
+                      onClick={handleBookAppointment}
+                    >
+                      Reservar hora
+                    </button>
+                  )}
 
                 </div>
 

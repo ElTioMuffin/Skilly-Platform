@@ -3,6 +3,7 @@ Django settings for config project.
 """
 
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -98,17 +99,28 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # BASE DE DATOS - POSTGRESQL
 # ============================================================
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Skilly',
-        'USER': 'postgres',
-        #'PASSWORD': '123456',
-        'PASSWORD': '93678827',
-        'HOST': 'localhost',
-        'PORT': '5432',
+if os.environ.get('SKILLY_DB_ENGINE') == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.environ.get(
+                'SKILLY_DB_NAME',
+                str(BASE_DIR / 'skilly_test.sqlite3'),
+            ),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('SKILLY_DB_NAME', 'Skilly'),
+            'USER': 'postgres',
+            #'PASSWORD': '123456',
+            'PASSWORD': '93678827',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 
 # ============================================================

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Admin.css";
 
@@ -7,31 +7,57 @@ import "./Admin.css";
 function Admin() {
 
   const [metrics, setMetrics] = useState(null);
-  useEffect(() => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
-    fetch(
-      "http://localhost:8000/api/admin/dashboard/metrics/"
-    )
-
-      .then(res => res.json())
-
-      .then(data => {
-
-        setMetrics(data);
-
-      })
-
-
+  const loadMetrics = useCallback(async (signal) => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(
+        "http://localhost:8000/api/admin/dashboard/metrics/",
+        { signal }
+      );
+      if (!response.ok) {
+        throw new Error(`El servidor respondió con un error (${response.status}).`);
+      }
+      const data = await response.json();
+      if (!data || typeof data !== "object" || Array.isArray(data)) {
+        throw new Error("El servidor devolvió un resumen con formato inesperado.");
+      }
+      setMetrics(data);
+    } catch (requestError) {
+      if (signal.aborted) return;
+      setError(requestError.message || "No se pudo cargar el panel.");
+    } finally {
+      if (!signal.aborted) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadMetrics(controller.signal);
+    return () => controller.abort();
+  }, [loadMetrics, reloadKey]);
+
   if (!metrics) {
 
     return (
 
       <main className="admin-page">
 
-        <h2>
-          Cargando dashboard...
-        </h2>
+        {loading ? (
+          <h2>Cargando dashboard...</h2>
+        ) : (
+          <section className="section-container" role="alert">
+            <h2>No se pudo cargar el panel.</h2>
+            <p>{error || "No hay datos disponibles."}</p>
+            <button type="button" onClick={() => setReloadKey((value) => value + 1)}>
+              Intentar de nuevo
+            </button>
+          </section>
+        )}
 
       </main>
 
@@ -106,8 +132,18 @@ function Admin() {
 
               <p>
                 {metrics.active_services}&nbsp;
-                servicios activos
+                servicios aprobados y disponibles
               </p>
+              <small>
+                {metrics.pending_services || 0} pendientes de aprobación
+              </small>
+
+              <Link
+                to="/admin/servicios"
+                className="user-card-button"
+              >
+                Revisar servicios →
+              </Link>
 
             </div>
 

@@ -47,12 +47,34 @@ class ReviewSerializer(serializers.ModelSerializer):
         ]
 
 class ServiceSerializer(serializers.ModelSerializer):
+    professional_name = serializers.CharField(
+        source="professional.full_name",
+        read_only=True,
+    )
+    professional_profession = serializers.CharField(
+        source="professional.profession",
+        read_only=True,
+    )
+    professional_location = serializers.CharField(
+        source="professional.location",
+        read_only=True,
+    )
+    professional_validated = serializers.BooleanField(
+        source="professional.validated",
+        read_only=True,
+    )
+    professional_review_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Service
         fields = [
             "id",
             "professional",
+            "professional_name",
+            "professional_profession",
+            "professional_location",
+            "professional_validated",
+            "professional_review_count",
             "name",
             "description",
             "category",
@@ -60,22 +82,24 @@ class ServiceSerializer(serializers.ModelSerializer):
             "location",
             "price",
             "active",
+            "approved",
             "created_at",
             "updated_at",
         ]
         read_only_fields = [
             "id",
             "professional",
+            "approved",
             "created_at",
             "updated_at",
         ]
 
+    def get_professional_review_count(self, service):
+        return service.professional.reviews_received.count()
+
 class ProfileSerializer(serializers.ModelSerializer):
 
-    services = ServiceSerializer(
-        many=True,
-        read_only=True
-    )
+    services = serializers.SerializerMethodField()
 
     reviews = ReviewSerializer(
         source="reviews_received",
@@ -100,6 +124,12 @@ class ProfileSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+    def get_services(self, profile):
+        services = getattr(profile, "available_services", None)
+        if services is None:
+            services = profile.services.filter(active=True, approved=True)
+        return ServiceSerializer(services, many=True).data
+
 class ServiceRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -121,6 +151,13 @@ class ServiceRequestSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "payment_status", "created_at", "updated_at"]
+
+    def validate_service(self, service):
+        if not service.active or not service.approved:
+            raise serializers.ValidationError(
+                "Este servicio no está disponible para solicitudes."
+            )
+        return service
 
 class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -145,6 +182,13 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def validate_service(self, service):
+        if not service.active or not service.approved:
+            raise serializers.ValidationError(
+                "Este servicio no está disponible para reservas."
+            )
+        return service
 
     def validate(self, attrs):
         professional = attrs.get("professional", getattr(self.instance, "professional", None))

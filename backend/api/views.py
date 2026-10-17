@@ -1,5 +1,8 @@
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate, get_user_model, password_validation
 from django.core.exceptions import ValidationError
+from django.core import signing
+from django.core.signing import BadSignature
+from django.db.models import Prefetch
 
 from rest_framework import status, viewsets
 
@@ -10,10 +13,29 @@ from rest_framework.decorators import (
 )
 
 from rest_framework.response import Response
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 from rest_framework.permissions import (
     IsAdminUser,
 )
+
+
+def get_session_user_from_token(request):
+    authorization = request.headers.get("Authorization", "")
+    if not authorization.startswith("Bearer "):
+        return None
+
+    try:
+        user_id = signing.loads(
+            authorization.removeprefix("Bearer "),
+            salt="skilly.user.session",
+            max_age=60 * 60 * 12,
+        )
+    except BadSignature:
+        return None
+
+    User = get_user_model()
+    return User.objects.filter(pk=user_id, is_active=True).first()
 
 from .models import (
     Profile,
@@ -47,11 +69,28 @@ from .serializers import (
 
 class ProfileViewSet(viewsets.ModelViewSet):
 
-    queryset = Profile.objects.all().filter(
-        user__is_staff=False,
-        role="professional",
-        validated=True
-    )
+    def get_queryset(self):
+        available_services = Service.objects.filter(
+            active=True,
+            approved=True,
+        ).order_by("-created_at")
+        return (
+            Profile.objects.filter(
+                user__is_staff=False,
+                role="professional",
+                validated=True,
+                services__active=True,
+                services__approved=True,
+            )
+            .distinct()
+            .prefetch_related(
+                Prefetch(
+                    "services",
+                    queryset=available_services,
+                    to_attr="available_services",
+                )
+            )
+        )
 
     serializer_class = ProfileSerializer
 
@@ -70,7 +109,9 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
 
-        queryset = Service.objects.all()
+        queryset = Service.objects.select_related("professional").prefetch_related(
+            "professional__reviews_received"
+        )
 
         professional_id = (
             self.request.query_params.get(
@@ -78,10 +119,33 @@ class ServiceViewSet(viewsets.ModelViewSet):
             )
         )
 
-        if professional_id:
-
+        if self.action == "list" and not professional_id:
             queryset = queryset.filter(
-                professional_id=professional_id
+                active=True,
+                approved=True,
+                professional__validated=True,
+                professional__role="professional",
+                professional__user__is_active=True,
+                professional__user__is_staff=False,
+            )
+        elif self.action in {"list", "update", "partial_update", "destroy"}:
+            user = get_session_user_from_token(self.request)
+            if not user:
+                raise NotAuthenticated("Inicia sesión para gestionar tus servicios.")
+            profile = getattr(user, "profile", None)
+            if not profile or profile.role != "professional":
+                raise PermissionDenied("Solo los profesionales pueden gestionar servicios.")
+            if professional_id and str(professional_id) != str(profile.pk):
+                raise PermissionDenied("Solo puedes ver o modificar tus propios servicios.")
+            queryset = queryset.filter(professional=profile)
+        else:
+            queryset = queryset.filter(
+                active=True,
+                approved=True,
+                professional__validated=True,
+                professional__role="professional",
+                professional__user__is_active=True,
+                professional__user__is_staff=False,
             )
 
         return queryset.order_by(
@@ -99,47 +163,17 @@ class ServiceViewSet(viewsets.ModelViewSet):
         **kwargs
     ):
 
-        professional_id = (
-            request.data.get(
-                "professional"
-            )
-        )
+        user = get_session_user_from_token(request)
+        if not user:
+            raise NotAuthenticated("Inicia sesión como profesional para crear un servicio.")
 
-        # -----------------------------------------------------
-        # Verificar que venga el profesional
-        # -----------------------------------------------------
+        profile = getattr(user, "profile", None)
+        if not profile or profile.role != "professional":
+            raise PermissionDenied("Solo los profesionales pueden crear servicios.")
 
-        if not professional_id:
-
-            return Response(
-                {
-                    "error":
-                        "Debes indicar el profesional."
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # -----------------------------------------------------
-        # Buscar perfil profesional
-        # -----------------------------------------------------
-
-        try:
-
-            profile = Profile.objects.get(
-                id=professional_id,
-                role="professional",
-                user__is_staff=False
-            )
-
-        except Profile.DoesNotExist:
-
-            return Response(
-                {
-                    "error":
-                        "El perfil profesional no existe."
-                },
-                status=status.HTTP_404_NOT_FOUND
-            )
+        professional_id = request.data.get("professional")
+        if professional_id and str(professional_id) != str(profile.pk):
+            raise PermissionDenied("No puedes crear servicios para otro profesional.")
 
         # -----------------------------------------------------
         # Validar datos del servicio
@@ -158,7 +192,8 @@ class ServiceViewSet(viewsets.ModelViewSet):
         # -----------------------------------------------------
 
         serializer.save(
-            professional=profile
+            professional=profile,
+            approved=False,
         )
 
         return Response(
@@ -184,31 +219,16 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
         instance = self.get_object()
 
-        professional_id = (
-            request.data.get(
-                "professional"
-            )
-        )
+        profile = getattr(get_session_user_from_token(request), "profile", None)
+        if not profile or profile.role != "professional":
+            raise PermissionDenied("Solo los profesionales pueden modificar servicios.")
 
         # -----------------------------------------------------
         # Verificar propietario
         # -----------------------------------------------------
 
-        if professional_id:
-
-            if str(
-                instance.professional_id
-            ) != str(
-                professional_id
-            ):
-
-                return Response(
-                    {
-                        "error":
-                            "No puedes modificar servicios de otro profesional."
-                    },
-                    status=status.HTTP_403_FORBIDDEN
-                )
+        if instance.professional_id != profile.pk:
+            raise PermissionDenied("No puedes modificar servicios de otro profesional.")
 
         # -----------------------------------------------------
         # Actualizar
@@ -224,9 +244,17 @@ class ServiceViewSet(viewsets.ModelViewSet):
             raise_exception=True
         )
 
+        changed_listing_details = any(
+            field in request.data
+            for field in ("name", "description", "category", "modality", "location", "price")
+        )
         serializer.save(
             professional=instance.professional
         )
+        if changed_listing_details:
+            instance.approved = False
+            instance.save(update_fields=["approved", "updated_at"])
+            serializer.instance.refresh_from_db()
 
         return Response(
             serializer.data,
@@ -296,6 +324,10 @@ class ServiceRequestViewSet(
     serializer_class = ServiceRequestSerializer
 
     def perform_create(self, serializer):
+        service = serializer.validated_data.get("service")
+        if service and (not service.active or not service.approved):
+            from rest_framework.exceptions import ValidationError as APIValidationError
+            raise APIValidationError({"service": "Este servicio no está disponible para solicitudes."})
         service_request = serializer.save()
         organization = getattr(service_request.client, "profile", None)
         organization_name = (
@@ -323,6 +355,10 @@ class ServiceRequestViewSet(
         )
 
     def perform_update(self, serializer):
+        service = serializer.validated_data.get("service")
+        if service and (not service.active or not service.approved):
+            from rest_framework.exceptions import ValidationError as APIValidationError
+            raise APIValidationError({"service": "Este servicio no está disponible para solicitudes."})
         was_completed = serializer.instance.status == "Completada"
         service_request = serializer.save()
         if service_request.status == "Completada" and not was_completed:
@@ -479,8 +515,27 @@ class AppointmentViewSet(
     serializer_class = AppointmentSerializer
 
     def perform_create(self, serializer):
-        appointment = serializer.save()
-        client_profile = getattr(appointment.client, "profile", None)
+        user = get_session_user_from_token(self.request)
+        if not user:
+            raise NotAuthenticated("Inicia sesión para crear una reserva.")
+        client_profile = getattr(user, "profile", None)
+        if not client_profile or client_profile.role != "organization":
+            raise PermissionDenied("Solo las organizaciones pueden reservar servicios.")
+
+        service = serializer.validated_data["service"]
+        if not service.active or not service.approved:
+            from rest_framework.exceptions import ValidationError as APIValidationError
+            raise APIValidationError({"service": "Este servicio no está disponible para reservas."})
+
+        professional = serializer.validated_data["professional"]
+        if professional.pk != service.professional_id:
+            from rest_framework.exceptions import ValidationError as APIValidationError
+            raise APIValidationError({"professional": "El profesional debe coincidir con el servicio seleccionado."})
+
+        appointment = serializer.save(
+            client=user,
+            professional=service.professional,
+        )
         organization_name = (
             client_profile.full_name if client_profile else appointment.client.username
         )
@@ -502,6 +557,10 @@ class AppointmentViewSet(
         )
 
     def perform_update(self, serializer):
+        service = serializer.validated_data.get("service")
+        if service and (not service.active or not service.approved):
+            from rest_framework.exceptions import ValidationError as APIValidationError
+            raise APIValidationError({"service": "Este servicio no está disponible para reservas."})
         was_completed = serializer.instance.status == "Completada"
         appointment = serializer.save()
         if appointment.status == "Completada" and not was_completed:
@@ -650,6 +709,21 @@ def login_view(request):
             "message":
                 "Inicio de sesión correcto.",
 
+            "user_token": signing.dumps(
+                user.pk,
+                salt="skilly.user.session",
+            ),
+
+            "admin_token": signing.dumps(
+                user.pk,
+                salt="skilly.admin.approval",
+            ) if user.is_staff else None,
+
+            "master_token": signing.dumps(
+                user.pk,
+                salt="skilly.master.panel",
+            ) if user.is_superuser and user.is_active else None,
+
             "user": {
 
                 "id":
@@ -663,6 +737,9 @@ def login_view(request):
 
                 "is_staff":
                     user.is_staff,
+
+                "is_superuser":
+                    user.is_superuser,
 
             },
 
@@ -893,6 +970,220 @@ def pending_profiles(request):
     )
 
 
+def get_admin_user_from_token(request):
+    authorization = request.headers.get("Authorization", "")
+    if not authorization.startswith("Bearer "):
+        return None
+
+    token = authorization.removeprefix("Bearer ")
+    try:
+        user_id = signing.loads(
+            token,
+            salt="skilly.admin.approval",
+            max_age=60 * 60 * 8,
+        )
+    except BadSignature:
+        return None
+
+    User = get_user_model()
+    return User.objects.filter(
+        pk=user_id,
+        is_staff=True,
+        is_active=True,
+    ).first()
+
+
+def get_master_user_from_token(request):
+    authorization = request.headers.get("Authorization", "")
+    if not authorization.startswith("Bearer "):
+        return None
+
+    token = authorization.removeprefix("Bearer ")
+    try:
+        user_id = signing.loads(
+            token,
+            salt="skilly.master.panel",
+            max_age=60 * 60 * 8,
+        )
+    except BadSignature:
+        return None
+
+    User = get_user_model()
+    return User.objects.filter(
+        pk=user_id,
+        is_superuser=True,
+        is_staff=True,
+        is_active=True,
+    ).first()
+
+
+@api_view(["GET", "POST", "PATCH"])
+def master_admins(request):
+    if not get_master_user_from_token(request):
+        return Response(
+            {"error": "Inicia sesión con una cuenta superusuario para administrar las cuentas."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    User = get_user_model()
+    if request.method == "GET":
+        admins = User.objects.filter(
+            is_staff=True,
+            is_superuser=False,
+        ).order_by("username")
+        return Response([
+            {
+                "id": admin.pk,
+                "username": admin.get_username(),
+                "email": admin.email,
+                "first_name": admin.first_name,
+                "last_name": admin.last_name,
+                "is_active": admin.is_active,
+            }
+            for admin in admins
+        ])
+
+    if request.method == "PATCH":
+        admin_id = request.data.get("id")
+        is_active = request.data.get("is_active")
+        if not isinstance(is_active, bool):
+            return Response(
+                {"error": "Indica si la cuenta debe quedar activa."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            admin = User.objects.get(
+                pk=admin_id,
+                is_staff=True,
+                is_superuser=False,
+            )
+        except (User.DoesNotExist, TypeError, ValueError):
+            return Response(
+                {"error": "La cuenta admin no existe."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        admin.is_active = is_active
+        admin.save(update_fields=["is_active"])
+        return Response({
+            "id": admin.pk,
+            "username": admin.get_username(),
+            "email": admin.email,
+            "first_name": admin.first_name,
+            "last_name": admin.last_name,
+            "is_active": admin.is_active,
+        })
+
+    username = str(request.data.get("username", "")).strip()
+    email = str(request.data.get("email", "")).strip().lower()
+    password = request.data.get("password", "")
+    first_name = str(request.data.get("first_name", "")).strip()
+    last_name = str(request.data.get("last_name", "")).strip()
+
+    if not username or not email or not password:
+        return Response(
+            {"error": "Usuario, correo y contraseña son obligatorios."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if User.objects.filter(username__iexact=username).exists():
+        return Response(
+            {"error": "Ese nombre de usuario ya está en uso."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    if User.objects.filter(email__iexact=email).exists():
+        return Response(
+            {"error": "Ese correo ya está asociado a una cuenta."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    candidate = User(username=username, email=email)
+    try:
+        password_validation.validate_password(password, user=candidate)
+    except ValidationError as error:
+        return Response(
+            {"error": " ".join(error.messages)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    admin = User.objects.create_user(
+        username=username,
+        email=email,
+        password=password,
+        first_name=first_name,
+        last_name=last_name,
+        is_staff=True,
+        is_superuser=False,
+    )
+    return Response(
+        {
+            "id": admin.pk,
+            "username": admin.get_username(),
+            "email": admin.email,
+            "first_name": admin.first_name,
+            "last_name": admin.last_name,
+            "is_active": admin.is_active,
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+
+@api_view(["GET"])
+def pending_services(request):
+    if not get_admin_user_from_token(request):
+        return Response(
+            {"error": "Inicia sesión con una cuenta administrativa del portal."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    services = Service.objects.filter(approved=False).select_related(
+        "professional"
+    ).prefetch_related("professional__reviews_received").order_by("created_at")
+    return Response(ServiceSerializer(services, many=True).data)
+
+
+@api_view(["PATCH"])
+def review_service(request, id):
+    if not get_admin_user_from_token(request):
+        return Response(
+            {"error": "Inicia sesión con una cuenta administrativa del portal."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    approved = request.data.get("approved")
+    if not isinstance(approved, bool):
+        return Response(
+            {"error": "Indica si el servicio queda aprobado."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        service = Service.objects.select_related("professional").get(pk=id)
+    except Service.DoesNotExist:
+        return Response(
+            {"error": "Servicio no encontrado."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    was_approved = service.approved
+    service.approved = approved
+    service.save(update_fields=["approved", "updated_at"])
+
+    if approved and not was_approved:
+        availability_message = (
+            "Ya aparece en el marketplace."
+            if service.active and service.professional.validated and service.professional.user.is_active
+            else "Actívalo y asegúrate de que tu perfil profesional esté validado para que aparezca en el marketplace."
+        )
+        PlatformNotification.objects.create(
+            recipient=service.professional.user,
+            title="Tu servicio fue aprobado",
+            message=f"El servicio {service.name} fue aprobado. {availability_message}",
+            link="/servicios",
+        )
+
+    return Response(ServiceSerializer(service).data)
+
+
 # =============================================================
 # VALIDATE PROFILE
 # =============================================================
@@ -996,7 +1287,12 @@ def dashboard_metrics(request):
     total_services = Service.objects.count()
 
     active_services = Service.objects.filter(
-        active=True
+        active=True,
+        approved=True,
+    ).count()
+
+    pending_services = Service.objects.filter(
+        approved=False,
     ).count()
 
     total_requests = ServiceRequest.objects.count()
@@ -1026,6 +1322,9 @@ def dashboard_metrics(request):
 
         "active_services":
             active_services,
+
+        "pending_services":
+            pending_services,
 
         "requests":
             total_requests,

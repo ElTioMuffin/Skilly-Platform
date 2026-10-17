@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 function ReservarHora() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedServiceId = searchParams.get("service");
 
   const [professional, setProfessional] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
@@ -24,9 +26,20 @@ function ReservarHora() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const storedUser = JSON.parse(
-    localStorage.getItem("skillyUser") || "null"
-  );
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("skillyUser") || "null");
+    } catch {
+      return null;
+    }
+  })();
+  const storedProfile = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("skillyProfile") || "null");
+    } catch {
+      return null;
+    }
+  })();
 
   const activeDays = useMemo(() => new Set(
     availability.filter((item) => item.active === true).map((item) => item.day)
@@ -67,7 +80,10 @@ function ReservarHora() {
         setProfessional(data);
 
         if (data.services && data.services.length > 0) {
-          setSelectedService(data.services[0]);
+          setSelectedService(
+            data.services.find((service) => String(service.id) === requestedServiceId)
+              || data.services[0]
+          );
         }
       } catch (err) {
         setError(err.message);
@@ -77,7 +93,7 @@ function ReservarHora() {
     };
 
     fetchProfessional();
-  }, [id]);
+  }, [id, requestedServiceId]);
 
   useEffect(() => {
     if (!professional?.id) return;
@@ -167,6 +183,11 @@ function ReservarHora() {
       return;
     }
 
+    if (storedProfile?.role !== "organization") {
+      setError("Solo las organizaciones pueden reservar servicios.");
+      return;
+    }
+
     if (!selectedService) {
       setError("Debes seleccionar un servicio.");
       return;
@@ -186,6 +207,7 @@ function ReservarHora() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("skillyUserToken") || ""}`,
           },
           body: JSON.stringify({
             client: storedUser.id,
@@ -228,6 +250,18 @@ function ReservarHora() {
       setSaving(false);
     }
   };
+
+  if (storedProfile?.role === "professional") {
+    return (
+      <main className="booking-page">
+        <div className="booking-container">
+          <h1>Las reservas son para organizaciones.</h1>
+          <p>Como profesional, puedes administrar tus servicios y disponibilidad, pero no reservar servicios.</p>
+          <Link to="/marketplace">Volver al marketplace</Link>
+        </div>
+      </main>
+    );
+  }
 
   if (loading) {
     return (

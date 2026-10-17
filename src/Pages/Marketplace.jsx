@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import ProfessionalCard from "../Components/ProfessionalCard";
+import ServiceCard from "../Components/ServiceCard";
 
 function Marketplace() {
-  const [professionals, setProfessionals] = useState([]);
+  const [services, setServices] = useState([]);
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todas las categorías");
@@ -12,72 +12,69 @@ function Marketplace() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    const loadProfessionals = async () => {
+    const controller = new AbortController();
+    const loadServices = async () => {
+      setLoading(true);
+      setError("");
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/profesionales/"
+          "http://127.0.0.1:8000/api/services/",
+          { signal: controller.signal, timeout: 10000 }
         );
 
-        console.log("Profesionales recibidos:", response.data);
-
-        setProfessionals(response.data);
+        if (!Array.isArray(response.data)) {
+          throw new Error("La respuesta del servidor no contiene una lista de servicios.");
+        }
+        setServices(response.data);
       } catch (error) {
+        if (controller.signal.aborted) return;
         console.error(
-          "Error al obtener profesionales:",
+          "Error al obtener servicios disponibles:",
           error
         );
 
-        setError(
-          "No se pudieron cargar los profesionales."
-        );
+        setServices([]);
+        setError(error.code === "ECONNABORTED"
+          ? "La solicitud tardó demasiado. Intenta nuevamente."
+          : error.response
+            ? `El servidor respondió con un error (${error.response.status}).`
+            : error.message || "No se pudo conectar con el servidor.");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
-    loadProfessionals();
-  }, []);
+    loadServices();
+    return () => controller.abort();
+  }, [reloadKey]);
 
-  const filteredProfessionals = professionals.filter(
-    (professional) => {
+  const filteredServices = services.filter((service) => {
       const searchText = search.toLowerCase();
 
       const matchesSearch =
-        professional.full_name
+        service.professional_name
           ?.toLowerCase()
           .includes(searchText) ||
-        professional.profession
+        service.professional_profession
           ?.toLowerCase()
           .includes(searchText) ||
-        professional.services?.some((service) =>
-          service.name
-            ?.toLowerCase()
-            .includes(searchText)
-        );
+        service.name?.toLowerCase().includes(searchText) ||
+        service.description?.toLowerCase().includes(searchText);
 
       const matchesCategory =
         category === "Todas las categorías" ||
-        professional.services?.some(
-          (service) =>
-            service.category === category
-        );
+        service.category === category;
 
       const matchesModality =
         modality === "Todas las modalidades" ||
-        professional.services?.some(
-          (service) =>
-            service.modality === modality
-        );
+        service.modality === modality;
 
       const matchesLocation =
         location === "Todas las ubicaciones" ||
-        professional.location === location ||
-        professional.services?.some(
-          (service) =>
-            service.location === location
-        );
+        (service.location || service.professional_location) === location;
 
       return (
         matchesSearch &&
@@ -98,7 +95,7 @@ function Marketplace() {
         </span>
 
         <h1>
-          Encuentra el profesional
+          Encuentra el servicio
           <br />
           que necesitas.
         </h1>
@@ -121,7 +118,7 @@ function Marketplace() {
 
           <input
             type="text"
-            placeholder="Busca por profesional, servicio o especialidad"
+            placeholder="Busca por servicio, profesional o especialidad"
             value={search}
             onChange={(event) =>
               setSearch(event.target.value)
@@ -223,11 +220,11 @@ function Marketplace() {
           <div>
 
             <span className="section-label">
-              TALENTO DISPONIBLE
+              SERVICIOS DISPONIBLES
             </span>
 
             <h2>
-              Profesionales
+              Servicios
             </h2>
 
           </div>
@@ -236,11 +233,11 @@ function Marketplace() {
           {!loading && !error && (
             <span className="results-count">
 
-              {filteredProfessionals.length}{" "}
+              {filteredServices.length}{" "}
 
-              {filteredProfessionals.length === 1
-                ? "profesional"
-                : "profesionales"}
+              {filteredServices.length === 1
+                ? "servicio"
+                : "servicios"}
 
             </span>
           )}
@@ -253,12 +250,12 @@ function Marketplace() {
           <div className="no-results">
 
             <h3>
-              Cargando profesionales...
+              Cargando servicios...
             </h3>
 
             <p>
-              Estamos obteniendo los profesionales
-              desde Skilly.
+              Estamos buscando servicios aprobados
+              y disponibles.
             </p>
 
           </div>
@@ -271,12 +268,15 @@ function Marketplace() {
           <div className="no-results">
 
             <h3>
-              No se pudieron cargar los profesionales.
+              No se pudieron cargar los servicios disponibles.
             </h3>
 
             <p>
               {error}
             </p>
+            <button type="button" onClick={() => setReloadKey((value) => value + 1)}>
+              Intentar de nuevo
+            </button>
 
           </div>
 
@@ -285,20 +285,13 @@ function Marketplace() {
 
         {!loading &&
           !error &&
-          filteredProfessionals.length > 0 && (
+          filteredServices.length > 0 && (
 
             <div className="professionals-grid">
 
-              {filteredProfessionals.map(
-                (professional) => (
-
-                  <ProfessionalCard
-                    key={professional.id}
-                    professional={professional}
-                  />
-
-                )
-              )}
+              {filteredServices.map((service) => (
+                <ServiceCard key={service.id} service={service} />
+              ))}
 
             </div>
 
@@ -307,17 +300,16 @@ function Marketplace() {
 
         {!loading &&
           !error &&
-          filteredProfessionals.length === 0 && (
+          filteredServices.length === 0 && (
 
             <div className="no-results">
 
               <h3>
-                No encontramos profesionales.
+                No encontramos servicios disponibles.
               </h3>
 
               <p>
-                Prueba con otra búsqueda o modifica
-                los filtros.
+                Aquí solo aparecen servicios activos aprobados. Prueba con otra búsqueda o modifica los filtros; si publicaste un servicio, debe ser aprobado por un admin para aparecer.
               </p>
 
             </div>

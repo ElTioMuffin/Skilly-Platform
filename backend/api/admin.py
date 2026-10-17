@@ -42,18 +42,31 @@ class ServiceAdmin(admin.ModelAdmin):
         "modality",
         "price",
         "active",
+        "approved",
     )
 
     list_filter = (
         "category",
         "modality",
         "active",
+        "approved",
     )
 
     search_fields = (
         "name",
         "professional__full_name",
     )
+
+    list_editable = ("approved", "active")
+    actions = ("approve_selected_services", "reject_selected_services")
+
+    @admin.action(description="Aprobar servicios seleccionados")
+    def approve_selected_services(self, request, queryset):
+        queryset.update(approved=True)
+
+    @admin.action(description="Rechazar servicios seleccionados")
+    def reject_selected_services(self, request, queryset):
+        queryset.update(approved=False)
 
 
 @admin.register(ServiceRequest)

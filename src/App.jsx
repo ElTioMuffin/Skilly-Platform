@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Navbar from "./Components/Navbar";
 
@@ -16,6 +16,7 @@ import MisReservas from "./Pages/MisReservas";
 import ProfessionalBookings from "./Pages/ProfessionalBookings";
 import Admin from "./Pages/Admin"
 import Validaciones from "./Pages/Admin/Validaciones"
+import ServiciosPendientes from "./Pages/Admin/Servicios"
 import Incidencias from "./Pages/Admin/Incidencias"
 import ProfileEdit from "./Pages/ProfileEdit"
 import MyAppointments from "./Pages/MyAppointments"
@@ -24,8 +25,24 @@ import Services from "./Pages/Services";
 import Notifications from "./Pages/Notifications";
 import DejarReview from "./Pages/DejarReview";
 import PaymentPortal from "./Pages/PaymentPortal";
+import MasterPanel from "./Pages/Master/Panel";
 
 import "./App.css";
+
+function MarketplaceRoute() {
+  let profile = null;
+  try {
+    profile = JSON.parse(localStorage.getItem("skillyProfile") || "null");
+  } catch {
+    profile = null;
+  }
+
+  if (profile?.role === "professional") {
+    return <Navigate to="/servicios" replace />;
+  }
+
+  return <Marketplace />;
+}
 
 function App() {
   return (
@@ -43,7 +60,7 @@ function App() {
 
           <Route
             path="/marketplace"
-            element={<Marketplace />}
+            element={<MarketplaceRoute />}
           />
 
           <Route
@@ -104,8 +121,16 @@ function App() {
             element={<Admin />}
           />
           <Route
+            path="/master/admins"
+            element={<MasterPanel />}
+          />
+          <Route
             path="/admin/validaciones"
             element={<Validaciones />}
+          />
+          <Route
+            path="/admin/servicios"
+            element={<ServiciosPendientes />}
           />
           <Route
             path="/admin/incidencias"

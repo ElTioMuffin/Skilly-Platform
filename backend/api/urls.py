@@ -17,6 +17,9 @@ from .views import (
     register_view,
     dashboard_metrics,
     update_professional_profile,
+    pending_services,
+    review_service,
+    master_admins,
 )
 
 
@@ -136,6 +139,24 @@ urlpatterns = [
     path(
         "admin/profiles/pending/",
         pending_profiles
+    ),
+
+    path(
+        "admin/services/pending/",
+        pending_services,
+        name="pending-services",
+    ),
+
+    path(
+        "admin/services/<int:id>/review/",
+        review_service,
+        name="review-service",
+    ),
+
+    path(
+        "master/admins/",
+        master_admins,
+        name="master-admins",
     ),
 
 

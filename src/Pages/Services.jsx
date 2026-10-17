@@ -103,7 +103,12 @@ function Services() {
             setError("");
 
             const response = await fetch(
-                `${API_URL}?professional=${professionalId}`
+                `${API_URL}?professional=${professionalId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("skillyUserToken") || ""}`,
+                    },
+                }
             );
 
             if (!response.ok) {
@@ -115,7 +120,9 @@ function Services() {
             }
 
             const data = await response.json();
-
+            if (!Array.isArray(data)) {
+                throw new Error("El servidor devolvió una lista de servicios con formato inesperado.");
+            }
             setServices(data);
 
         } catch (err) {
@@ -138,7 +145,7 @@ function Services() {
     const activeServices = useMemo(() => {
 
         return services.filter(
-            service => service.active
+            service => service.active && service.approved
         ).length;
 
     }, [services]);
@@ -147,7 +154,7 @@ function Services() {
     const averagePrice = useMemo(() => {
 
         const active = services.filter(
-            service => service.active
+            service => service.active && service.approved
         );
 
         if (active.length === 0) {
@@ -326,7 +333,7 @@ function Services() {
             // -------------------------------------------------
 
             const url = editingId
-                ? `${API_URL}${editingId}/`
+                ? `${API_URL}${editingId}/?professional=${professionalId}`
                 : API_URL;
 
             const method = editingId
@@ -342,6 +349,7 @@ function Services() {
                     headers: {
                         "Content-Type":
                             "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("skillyUserToken") || ""}`,
                     },
 
                     body:
@@ -403,8 +411,8 @@ function Services() {
 
             setMessage(
                 editingId
-                    ? "Servicio actualizado correctamente."
-                    : "Servicio creado correctamente."
+                    ? "Servicio actualizado y enviado nuevamente a revisión. Las organizaciones lo verán cuando sea aprobado."
+                    : "Servicio enviado a revisión. Estará visible para las organizaciones cuando sea aprobado y esté activo."
             );
 
 
@@ -497,13 +505,14 @@ function Services() {
 
 
             const response = await fetch(
-                `${API_URL}${service.id}/`,
+                `${API_URL}${service.id}/?professional=${professionalId}`,
                 {
                     method: "PATCH",
 
                     headers: {
                         "Content-Type":
                             "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("skillyUserToken") || ""}`,
                     },
 
                     body: JSON.stringify({
@@ -568,9 +577,12 @@ function Services() {
 
 
             const response = await fetch(
-                `${API_URL}${id}/`,
+                `${API_URL}${id}/?professional=${professionalId}`,
                 {
                     method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("skillyUserToken") || ""}`,
+                    },
                 }
             );
 
@@ -905,7 +917,7 @@ function Services() {
                                         <article
                                             className={
                                                 `service-card ${
-                                                    service.active
+                                                    service.active && service.approved
                                                         ? ""
                                                         : "service-inactive"
                                                 }`
@@ -930,7 +942,7 @@ function Services() {
                                                 <span
                                                     className={
                                                         `service-status ${
-                                                            service.active
+                                                            service.active && service.approved
                                                                 ? "active"
                                                                 : "inactive"
                                                         }`
@@ -939,13 +951,21 @@ function Services() {
 
                                                     <span />
 
-                                                    {service.active
-                                                        ? "Activo"
-                                                        : "Pausado"}
+                                                    {!service.approved
+                                                        ? "Desactivado"
+                                                        : service.active
+                                                            ? "Disponible"
+                                                            : "Pausado"}
 
                                                 </span>
 
                                             </div>
+
+                                            {!service.approved && (
+                                                <p className="service-approval-note">
+                                                    Solo tú puedes ver este servicio. No aparecerá en el marketplace hasta que vuelva a ser aprobado.
+                                                </p>
+                                            )}
 
 
 
