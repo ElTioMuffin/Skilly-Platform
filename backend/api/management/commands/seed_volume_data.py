@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, transaction
 
-from api.models import ProfessionalAvailability, Profile
+from api.models import ProfessionalAvailability, Profile, Service
 
 
 BATCH_SIZE = 2000
@@ -13,7 +13,7 @@ DAYS = ("lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"
 
 
 class Command(BaseCommand):
-    help = "Agrega perfiles y bloques de disponibilidad para PR-03."
+    help = "Agrega perfiles, servicios y bloques de disponibilidad para PR-03."
 
     def add_arguments(self, parser):
         parser.add_argument("--professionals", type=int, default=100_000)
@@ -85,6 +85,37 @@ class Command(BaseCommand):
             ]
             self.bulk_insert(Profile.objects, profiles_to_create)
 
+            # El marketplace público devuelve servicios aprobados. Sin estos
+            # registros, PR-03 solo llenaría perfiles/disponibilidad y no
+            # ejercitaría el endpoint que consume el frontend.
+            volume_profiles = Profile.objects.filter(
+                user__username__startswith=prefix
+            ).order_by("user_id")
+            existing_service_names = set(
+                Service.objects.filter(
+                    name__startswith="Servicio volumen PR03 "
+                ).values_list("name", flat=True)
+            )
+            services_to_create = (
+                Service(
+                    professional_id=profile.id,
+                    name=f"Servicio volumen PR03 {profile.user_id:06d}",
+                    description="Servicio ficticio para pruebas de volumen.",
+                    category="Desarrollo",
+                    modality="Remoto",
+                    location="Santiago",
+                    price=25000,
+                    active=True,
+                    approved=True,
+                )
+                for profile in volume_profiles.only("id", "user_id").iterator(
+                    chunk_size=BATCH_SIZE
+                )
+                if f"Servicio volumen PR03 {profile.user_id:06d}"
+                not in existing_service_names
+            )
+            self.bulk_insert(Service.objects, services_to_create)
+
             profile_ids = Profile.objects.filter(
                 user__username__startswith=prefix
             ).order_by("user_id").values_list("id", flat=True)
@@ -122,7 +153,9 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"PR-03 listo: {len(user_ids)} usuarios profesionales y "
-                f"{availability_count} bloques objetivo en {monotonic() - started:.1f} s."
+                f"{availability_count} bloques objetivo y "
+                f"{professional_count} servicios aprobados en "
+                f"{monotonic() - started:.1f} s."
             )
         )
         self.stdout.write("Los usuarios de volumen no tienen contraseña utilizable ni pueden iniciar sesión.")

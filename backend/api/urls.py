@@ -11,8 +11,6 @@ from .views import (
     IncidentViewSet,
     ProfessionalAvailabilityViewSet,
     PlatformNotificationViewSet,
-    pending_profiles,
-    validate_profile,
     login_view,
     register_view,
     dashboard_metrics,
@@ -137,11 +135,6 @@ urlpatterns = [
     name="registro"
     ),
     path(
-        "admin/profiles/pending/",
-        pending_profiles
-    ),
-
-    path(
         "admin/services/pending/",
         pending_services,
         name="pending-services",
@@ -160,10 +153,6 @@ urlpatterns = [
     ),
 
 
-    path(
-        "admin/profiles/<int:id>/validate/",
-        validate_profile
-    ),
     path(
     "admin/dashboard/metrics/",
         dashboard_metrics

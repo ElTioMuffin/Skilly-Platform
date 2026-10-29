@@ -104,25 +104,6 @@ function Admin() {
               </p>
 
             </div>
-
-
-
-            <div className="admin-card">
-
-              <h3>
-                Validaciones
-              </h3>
-
-              <p>
-                {metrics.pending_validations}&nbsp;
-                pendientes de revisión
-              </p>
-
-            </div>
-
-
-
-
             <div className="admin-card">
 
 
@@ -196,36 +177,6 @@ function Admin() {
 
 
           <div className="steps-grid">
-
-
-
-            <div className="step-card">
-
-
-
-              <h3>
-                Validar perfiles
-              </h3>
-
-
-              <p>
-                Revisa documentos,
-                aprueba profesionales
-                y controla el KYC.
-              </p>
-
-
-              <Link
-                to="/admin/validaciones"
-                className="user-card-button"
-              >
-                Gestionar →
-              </Link>
-
-
-            </div>
-
-
 
 
 

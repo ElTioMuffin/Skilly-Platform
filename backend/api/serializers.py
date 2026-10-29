@@ -59,10 +59,6 @@ class ServiceSerializer(serializers.ModelSerializer):
         source="professional.location",
         read_only=True,
     )
-    professional_validated = serializers.BooleanField(
-        source="professional.validated",
-        read_only=True,
-    )
     professional_review_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -73,7 +69,6 @@ class ServiceSerializer(serializers.ModelSerializer):
             "professional_name",
             "professional_profession",
             "professional_location",
-            "professional_validated",
             "professional_review_count",
             "name",
             "description",
@@ -117,7 +112,6 @@ class ProfileSerializer(serializers.ModelSerializer):
             "profession",
             "bio",
             "location",
-            "validated",
             "services",
             "reviews",
             "created_at",

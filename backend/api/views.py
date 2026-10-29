@@ -78,7 +78,6 @@ class ProfileViewSet(viewsets.ModelViewSet):
             Profile.objects.filter(
                 user__is_staff=False,
                 role="professional",
-                validated=True,
                 services__active=True,
                 services__approved=True,
             )
@@ -123,7 +122,6 @@ class ServiceViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(
                 active=True,
                 approved=True,
-                professional__validated=True,
                 professional__role="professional",
                 professional__user__is_active=True,
                 professional__user__is_staff=False,
@@ -142,7 +140,6 @@ class ServiceViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(
                 active=True,
                 approved=True,
-                professional__validated=True,
                 professional__role="professional",
                 professional__user__is_active=True,
                 professional__user__is_staff=False,
@@ -940,36 +937,6 @@ def register_view(request):
     )
 
 
-# =============================================================
-# PENDING PROFILES
-# =============================================================
-
-@api_view(["GET"])
-def pending_profiles(request):
-
-    profiles = Profile.objects.filter(
-
-        validated=False,
-
-        role="professional",
-
-        user__is_staff=False
-
-    )
-
-    serializer = ProfileSerializer(
-        profiles,
-        many=True
-    )
-
-    print(profiles)  # Agrega esta línea para imprimir los datos serializados
-
-    return Response(
-        serializer.data,
-        status=status.HTTP_200_OK
-    )
-
-
 def get_admin_user_from_token(request):
     authorization = request.headers.get("Authorization", "")
     if not authorization.startswith("Bearer "):
@@ -1171,8 +1138,8 @@ def review_service(request, id):
     if approved and not was_approved:
         availability_message = (
             "Ya aparece en el marketplace."
-            if service.active and service.professional.validated and service.professional.user.is_active
-            else "Actívalo y asegúrate de que tu perfil profesional esté validado para que aparezca en el marketplace."
+            if service.active and service.professional.user.is_active
+            else "Actívalo para que aparezca en el marketplace."
         )
         PlatformNotification.objects.create(
             recipient=service.professional.user,
@@ -1182,67 +1149,6 @@ def review_service(request, id):
         )
 
     return Response(ServiceSerializer(service).data)
-
-
-# =============================================================
-# VALIDATE PROFILE
-# =============================================================
-
-@api_view(["PATCH"])
-def validate_profile(
-    request,
-    id
-):
-
-    try:
-
-        profile = Profile.objects.get(
-            id=id
-        )
-
-    except Profile.DoesNotExist:
-
-        return Response(
-            {
-                "error":
-                    "Perfil no encontrado"
-            },
-            status=status.HTTP_404_NOT_FOUND
-        )
-
-    validated = request.data.get(
-        "validated"
-    )
-
-    if validated is None:
-
-        return Response(
-            {
-                "error":
-                    "Debe indicar validated"
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    profile.validated = validated
-
-    profile.save()
-
-    serializer = ProfileSerializer(
-        profile
-    )
-
-    return Response(
-        {
-            "message":
-                "Estado actualizado correctamente",
-
-            "profile":
-                serializer.data
-        },
-
-        status=status.HTTP_200_OK
-    )
 
 
 # =============================================================
@@ -1259,26 +1165,6 @@ def dashboard_metrics(request):
     total_professionals = Profile.objects.filter(
 
         role="professional",
-
-        user__is_staff=False
-
-    ).count()
-
-    pending_validations = Profile.objects.filter(
-
-        role="professional",
-
-        validated=False,
-
-        user__is_staff=False
-
-    ).count()
-
-    validated_professionals = Profile.objects.filter(
-
-        role="professional",
-
-        validated=True,
 
         user__is_staff=False
 
@@ -1310,12 +1196,6 @@ def dashboard_metrics(request):
 
         "professionals":
             total_professionals,
-
-        "pending_validations":
-            pending_validations,
-
-        "validated_professionals":
-            validated_professionals,
 
         "services":
             total_services,

@@ -24,17 +24,6 @@ function ServiceCard({ service }) {
       <div className="professional-info">
         <div className="professional-name">
           <h3>{service.name}</h3>
-          {service.professional_validated && (
-            <span className="validated-badge">✓</span>
-          )}
-        </div>
-
-        <p className="professional-profession">
-          Por {service.professional_name} · {service.professional_profession || "Profesional"}
-        </p>
-
-        <div className="reviews-count">
-          {service.professional_review_count || 0} reseñas del profesional
         </div>
 
         <div className="professional-service">

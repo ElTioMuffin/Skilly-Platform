@@ -2,5 +2,5 @@ projectKey=skilly-latam
 serverUrl=http://localhost:9000
 serverVersion=26.10.0.133078
 dashboardUrl=http://localhost:9000/dashboard?id=skilly-latam
-ceTaskId=9d47053b-9caa-4cd0-bb13-9d994f0ec2cb
-ceTaskUrl=http://localhost:9000/api/ce/task?id=9d47053b-9caa-4cd0-bb13-9d994f0ec2cb
+ceTaskId=cd1dd766-d0f3-4c88-91d5-c94c6d65d6db
+ceTaskUrl=http://localhost:9000/api/ce/task?id=cd1dd766-d0f3-4c88-91d5-c94c6d65d6db

@@ -135,3 +135,8 @@ reports/qa/
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+reports.rar
+.scannerwork/report-task.txt
+docs/qa/README.md
+docs/qa/skilly-load-test.jmx
+docs/qa/skilly-marketplace-volume.jmx

@@ -15,7 +15,6 @@ import ReservarHora from "./Pages/ReservarHora";
 import MisReservas from "./Pages/MisReservas";
 import ProfessionalBookings from "./Pages/ProfessionalBookings";
 import Admin from "./Pages/Admin"
-import Validaciones from "./Pages/Admin/Validaciones"
 import ServiciosPendientes from "./Pages/Admin/Servicios"
 import Incidencias from "./Pages/Admin/Incidencias"
 import ProfileEdit from "./Pages/ProfileEdit"
@@ -123,10 +122,6 @@ function App() {
           <Route
             path="/master/admins"
             element={<MasterPanel />}
-          />
-          <Route
-            path="/admin/validaciones"
-            element={<Validaciones />}
           />
           <Route
             path="/admin/servicios"

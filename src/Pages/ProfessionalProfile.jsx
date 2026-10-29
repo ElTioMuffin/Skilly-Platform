@@ -192,12 +192,6 @@ function ProfessionalProfile() {
                 {professional.full_name}
               </h1>
 
-              {professional.validated && (
-                <span className="validated-badge">
-                  ✓
-                </span>
-              )}
-
             </div>
 
 

@@ -55,12 +55,6 @@ function Marketplace() {
       const searchText = search.toLowerCase();
 
       const matchesSearch =
-        service.professional_name
-          ?.toLowerCase()
-          .includes(searchText) ||
-        service.professional_profession
-          ?.toLowerCase()
-          .includes(searchText) ||
         service.name?.toLowerCase().includes(searchText) ||
         service.description?.toLowerCase().includes(searchText);
 
@@ -118,7 +112,7 @@ function Marketplace() {
 
           <input
             type="text"
-            placeholder="Busca por servicio, profesional o especialidad"
+            placeholder="Busca por nombre o descripción del servicio"
             value={search}
             onChange={(event) =>
               setSearch(event.target.value)
