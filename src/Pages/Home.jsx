@@ -117,7 +117,7 @@ function Home() {
               </h3>
 
               <p>
-                Revisa perfiles, experiencia y
+                Revisa servicios, experiencia y
                 reputación.
               </p>
 

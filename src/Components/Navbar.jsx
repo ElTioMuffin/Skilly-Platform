@@ -232,7 +232,7 @@ function Navbar() {
 
 
                 <Link to="/marketplace">
-                  Profesionales
+                  Servicios
                 </Link>
 
 
@@ -367,7 +367,7 @@ function Navbar() {
 
 
                 <Link to="/marketplace">
-                  Profesionales
+                  Servicios
                 </Link>
 
 

@@ -418,7 +418,7 @@ function ClientRequests() {
               to="/marketplace"
               className="request-back-button"
             >
-              Buscar profesionales
+              Buscar servicios
             </Link>
 
           </div>
@@ -575,10 +575,10 @@ function ClientRequests() {
 
 
                   <Link
-                    to={`/profesional/${request.professionalId}`}
+                    to={`/profesional/${request.professionalId}?service=${request.service}`}
                     className="client-request-profile-button"
                   >
-                    Ver perfil del profesional →
+                    Ver servicio →
                   </Link>
 
                   {request.status === "Completada" && request.payment_status === "Pagado" && (

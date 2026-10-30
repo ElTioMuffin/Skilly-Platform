@@ -278,11 +278,11 @@ function ReservarHora() {
       <main className="booking-page">
         <div className="booking-container">
           <Link to="/marketplace" className="back-link">
-            ← Volver a profesionales
+            ← Volver a servicios
           </Link>
 
           <div className="booking-error">
-            <h1>No se pudo cargar el profesional</h1>
+            <h1>No se pudo cargar el servicio</h1>
             <p>{error}</p>
           </div>
         </div>
@@ -295,22 +295,19 @@ function ReservarHora() {
       <div className="booking-container">
 
         <Link
-          to={`/profesional/${professional.id}`}
+          to={`/profesional/${professional.id}?service=${selectedService?.id || ""}`}
           className="back-link"
         >
-          ← Volver al perfil
+          ← Volver al servicio
         </Link>
 
         <div className="booking-header">
-          <span className="section-label">RESERVAR HORA</span>
-
           <h1>
-            Reserva una hora con {professional.full_name}
+            Reserva una hora para este servicio
           </h1>
 
           <p>
-            Selecciona el servicio, la fecha y el horario que
-            prefieras.
+            Selecciona el horario que prefieras.
           </p>
         </div>
 

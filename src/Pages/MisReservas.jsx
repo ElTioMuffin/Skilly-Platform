@@ -126,22 +126,17 @@ function MisReservas() {
           to="/marketplace"
           className="back-link"
         >
-          ← Volver a profesionales
+          ← Volver a servicios
         </Link>
 
         <header className="client-bookings-header">
-
-          <span className="section-label">
-            MIS RESERVAS
-          </span>
 
           <h1>
             Mis reservas
           </h1>
 
           <p>
-            Aquí puedes revisar las horas que has
-            reservado con profesionales de Skilly.
+            Aquí puedes revisar las horas reservadas en Skilly.
           </p>
 
           <Link
@@ -167,7 +162,7 @@ function MisReservas() {
             </h2>
 
             <p>
-              Explora nuestros profesionales y
+              Explora nuestros servicios y
               reserva una hora cuando encuentres
               el servicio que necesitas.
             </p>
@@ -176,7 +171,7 @@ function MisReservas() {
               to="/marketplace"
               className="new-booking-button"
             >
-              Buscar profesionales
+              Buscar servicios
             </Link>
 
           </div>
@@ -213,15 +208,8 @@ function MisReservas() {
                       </span>
 
                       <h2>
-                        {professional
-                          ? professional.full_name
-                          : "Profesional"}
+                        {getServiceName(reserva.professional, reserva.service)}
                       </h2>
-
-                      <p>
-                        {professional?.profession ||
-                          "Profesional"}
-                      </p>
                     </div>
 
                     <span
@@ -237,14 +225,13 @@ function MisReservas() {
                     <div className="booking-data">
 
                       <span>
-                        Servicio
+                        Profesional
                       </span>
 
                       <strong>
-                        {getServiceName(
-                          reserva.professional,
-                          reserva.service
-                        )}
+                        {professional
+                          ? `${professional.full_name}, ${professional.profession || "Profesional"}`
+                          : "Profesional"}
                       </strong>
 
                     </div>
@@ -293,10 +280,10 @@ function MisReservas() {
 
                   {professional && (
                     <Link
-                      to={`/profesional/${professional.id}`}
+                      to={`/profesional/${professional.id}?service=${reserva.service}`}
                       className="booking-profile-button"
                     >
-                      Ver perfil del profesional
+                      Ver servicio
                     </Link>
                   )}
 

@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function ProfessionalProfile() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const requestedServiceId = searchParams.get("service");
   const navigate = useNavigate();
 
   const [professional, setProfessional] = useState(null);
@@ -39,7 +41,7 @@ function ProfessionalProfile() {
         );
 
         setError(
-          "No se pudo cargar el perfil del profesional."
+          "No se pudo cargar el servicio."
         );
 
       } finally {
@@ -61,11 +63,11 @@ function ProfessionalProfile() {
             to="/marketplace"
             className="back-link"
           >
-            ← Volver al Marketplace
+            ← Volver a servicios
           </Link>
 
           <h1>
-            Cargando perfil...
+            Cargando servicio...
           </h1>
 
           <p>
@@ -86,7 +88,7 @@ function ProfessionalProfile() {
         <div className="profile-container">
 
           <h1>
-            Profesional no encontrado
+            Servicio no encontrado
           </h1>
 
           <p>
@@ -94,7 +96,7 @@ function ProfessionalProfile() {
           </p>
 
           <Link to="/marketplace">
-            ← Volver al Marketplace
+            ← Volver a servicios
           </Link>
 
         </div>
@@ -111,7 +113,7 @@ function ProfessionalProfile() {
     : [];
 
 
-  const reviews = Array.isArray(
+  const allReviews = Array.isArray(
     professional.reviews
   )
     ? professional.reviews
@@ -119,9 +121,13 @@ function ProfessionalProfile() {
 
 
   const mainService =
-    services.length > 0
-      ? services[0]
-      : null;
+    services.find((service) => String(service.id) === requestedServiceId)
+      || services[0]
+      || null;
+
+  const reviews = mainService
+    ? allReviews.filter((review) => Number(review.service_id) === Number(mainService.id))
+    : [];
 
 
   const handleRequestService = () => {
@@ -142,9 +148,7 @@ function ProfessionalProfile() {
       return;
     }
 
-    navigate(
-      `/reservar/${professional.id}`
-    );
+    navigate(`/reservar/${professional.id}?service=${mainService.id}`);
   };
 
 
@@ -165,39 +169,24 @@ function ProfessionalProfile() {
           to="/marketplace"
           className="back-link"
         >
-          ← Volver al Marketplace
+          ← Volver a servicios
         </Link>
 
 
-        {/* PERFIL DEL PROFESIONAL */}
-
         <section className="profile-header">
-
-          <div className="profile-photo">
-
-            <span>
-              {professional.full_name
-                ?.charAt(0)
-                .toUpperCase()}
-            </span>
-
-          </div>
-
-
           <div className="profile-main-info">
 
             <div className="profile-name">
 
               <h1>
-                {professional.full_name}
+                {mainService?.name || "Servicio"}
               </h1>
 
             </div>
 
 
             <p className="profile-profession">
-              {professional.profession ||
-                "Profesional"}
+              {professional.full_name} · {professional.profession || "Profesional"}
             </p>
 
 
@@ -211,11 +200,7 @@ function ProfessionalProfile() {
 
             <div className="profile-tags">
 
-              {mainService && (
-                <span>
-                  {mainService.name}
-                </span>
-              )}
+              {mainService?.category && <span>{mainService.category}</span>}
 
               {mainService && (
                 <span>
@@ -233,116 +218,40 @@ function ProfessionalProfile() {
 
           </div>
 
+          {mainService && (
+            <aside className="service-box">
+              <span className="section-label">PRECIO DEL SERVICIO</span>
+              <strong>${Number(mainService.price).toLocaleString("es-CL")}</strong>
+              {canBook && (
+                <button type="button" onClick={handleBookAppointment}>
+                  Agendar servicio
+                </button>
+              )}
+            </aside>
+          )}
+
         </section>
 
-
-        {/* INFORMACIÓN DEL PROFESIONAL */}
 
         <section className="profile-content">
 
           <div className="profile-description">
 
             <span className="section-label">
-              PERFIL PROFESIONAL
+              RELACIÓN PROFESIONAL / SERVICIO
             </span>
 
             <h2>
-              Sobre este profesional
+              Sobre este servicio
             </h2>
 
             <p>
-              {professional.bio ||
-                `Profesional especializado en ${
-                  professional.profession ||
-                  "su área"
-                }. Con experiencia orientada a
-                entregar soluciones adaptadas a
-                las necesidades de cada proyecto.`}
+              {mainService?.description ||
+                "Este servicio está pensado para responder a las necesidades de tu proyecto."}
             </p>
 
           </div>
 
-
-          <aside className="service-box">
-
-            <span className="section-label">
-              SERVICIO
-            </span>
-
-
-            {mainService ? (
-
-              <>
-
-                <h3>
-                  {mainService.name}
-                </h3>
-
-
-                {mainService.description && (
-                  <p>
-                    {mainService.description}
-                  </p>
-                )}
-
-
-                <p>
-                  Desde
-                </p>
-
-
-                <strong>
-                  $
-                  {Number(
-                    mainService.price
-                  ).toLocaleString("es-CL")}
-                </strong>
-
-
-                <div className="profile-action-buttons">
-
-                  {/* <button
-                    type="button"
-                    className="request-service-button"
-                    onClick={handleRequestService}
-                  >
-                    Solicitar servicio
-                  </button> */}
-
-
-                  {canBook && (
-                    <button
-                      type="button"
-                      className="profile-book-button"
-                      onClick={handleBookAppointment}
-                    >
-                      Reservar hora
-                    </button>
-                  )}
-
-                </div>
-
-              </>
-
-            ) : (
-
-              <p>
-                Este profesional todavía no tiene
-                servicios publicados.
-              </p>
-
-            )}
-
-            
-            {/* <button
-              type="button"
-              className="view-requests-button"
-              onClick={handleViewRequests}
-            >
-              Ver solicitudes recibidas
-            </button> */}
-
-          </aside>
 
         </section>
 

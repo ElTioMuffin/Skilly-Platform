@@ -15,12 +15,6 @@ function ServiceCard({ service }) {
 
   return (
     <article className="professional-card">
-      <div className="professional-photo">
-        <span>
-          {service.name?.charAt(0).toUpperCase()}
-        </span>
-      </div>
-
       <div className="professional-info">
         <div className="professional-name">
           <h3>{service.name}</h3>
@@ -37,17 +31,17 @@ function ServiceCard({ service }) {
 
           <div className="professional-card-actions">
             <Link
-              to={`/profesional/${service.professional}`}
+              to={`/profesional/${service.professional}?service=${service.id}`}
               className="professional-profile-button"
             >
-              Ver perfil
+                Ver servicio
             </Link>
             {canBook && (
               <Link
                 to={`/reservar/${service.professional}?service=${service.id}`}
                 className="professional-booking-link"
               >
-                Reservar hora
+                Agendar servicio
               </Link>
             )}
           </div>

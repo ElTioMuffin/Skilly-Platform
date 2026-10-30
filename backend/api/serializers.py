@@ -13,6 +13,11 @@ from .models import (
 
 class ReviewSerializer(serializers.ModelSerializer):
 
+    service_id = serializers.IntegerField(
+        source="appointment.service_id",
+        read_only=True,
+    )
+
     client_username = serializers.CharField(
             source="client.username",
             read_only=True
@@ -28,6 +33,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "appointment",
+            "service_id",
             "client",
             "professional",
             "comment",
